@@ -1,0 +1,77 @@
+\documentclass[11pt,a4paper]{article}
+
+% Configuration for German Texts
+%\usepackage[T1]{fontenc}
+%\usepackage[utf8]{inputenc}
+%\usepackage[ngerman]{babel}
+%\usepackage{marvosym}
+%\DeclareUnicodeCharacter{20AC}{\EUR}
+
+\begin{document}
+\title{Pflichtenheft\\[1ex] \large Software Requirements Specification (SRS)}
+
+\author{Bastian Fischer, Samuel Jaschke, Evgeni Kuligin, Hannes Träger und Paul Volk}
+\date{Zuletzt bearbeitet am 02. April 2025}
+\maketitle
+
+
+% ========================================		
+\noindent\textbf{Softwaresystem: Sudoku Bildgenerierungsoftware}\\
+\textbf{Version: 1.0.0}
+\section{Sudoku-Muster}
+\begin{itemize}
+\item Erzeugung von Software zur Lösung und Analyse von Sudoku-Rätseln.
+\item Erzeugung partieller Sudoku's mit bestimmten Bildern.
+\end{itemize}
+
+
+% ========================================		
+\section{Motivation und Hintergründe}
+
+Als Motivation diente ein Sudoku-Heft mit bestimmten partiellen Sudokus, welche "Bilder" von Katzen darstellen. Sudoku's sind 9x9 Gitter, welche wieder in 3x3 Untergitter unterteilt sind. In jeder Spalte, Zeile und in jedem Untergitter dürfen die Zahlen 1-9 genau einmal vorkommen. Jedes partielle Sudoku ist eindeutig lösbar.
+
+% ========================================		
+\section{Zielsetzung}
+
+Bereitstellung eines grafischen Benutzer-Interfaces (GUI) für das Erstellen von partiellen Sudoku's mit vorgegebenen Zellen, welche ein bestimmtes Muster erzeugen. Also deren Zahlen eine bestimmte Figur ergeben. Überprüfung der Eingabe, ob ein partielles Sudoku eindeutig lösbar ist. Eventuell ist dafür eine vorherige Aufzählung aller Äquivalenzklassen notwendig. Ein potenzielles Ziel ist die Ermittlung verschiedener Schwierigkeitsstufen für die partiellen Sudoku's.
+
+
+
+% ========================================		
+\section{Projektbestandteile}
+
+\subsection{Äquivalenzklassen}
+\begin{itemize}
+    \item Definition \& Analyse von Äquivalenzklassen
+    \item Aufzählung der Äquivalenzklassen, falls notwendig
+\end{itemize}
+
+\subsection{Backend-Implementierung}
+\begin{itemize}
+    \item Implementierung eines Lösungsverfahrens.
+    \begin{itemize}
+        \item Möglichkeiten: CSP-Solver, SAT-Solver, Backtracking, Heuristiken.
+        \item Das Ziel ist lediglich ein Lösungsverfahren zu implementieren, wir werden verschiedene Möglichkeiten in Betracht ziehen.
+    \end{itemize}
+    \item Eventuelle Speicherung der Äquivalenzklasse.
+    \item Kommunikation mit Frontend.
+\end{itemize}
+
+\subsection{Frontend-Implementierung}
+\begin{itemize}
+    \item Gestaltung einer interaktiven Web-Anwendung.
+    \item Visualisierung der Rätsel.
+    \item Eingabe relevanter Zellen.
+    \item Ausgabe des erstellten partiellen Sudoku's.
+\end{itemize}
+
+\subsection{Optional}
+\begin{itemize}
+    \item Ermittlung der Äquivalenzklassen.
+    \item Ermittlung verschiedener Schwierigkeitsstufen von partiellen Sudokus.
+    \begin{itemize}
+        \item Anhand der benötigten Lösungsstrategien oder Anzahl der Hinweise.
+    \end{itemize}
+\end{itemize}
+
+\end{document}
