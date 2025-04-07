@@ -23,16 +23,68 @@ fn main() {
         println!("");}
     println!("");
 
-    let (row_permutation, col_permutation, mirror) = find_permutations(&grid);
+    let (row_permutation, col_permutation, mirror) = find_permutations(&grid, &9);
     println!("{:?}", row_permutation);
     println!("{:?}", col_permutation);
     println!("{:?}", mirror);
-    let mut grid_permuted = apply_permutations(&grid, &row_permutation, &col_permutation, &mirror);
+    let mut grid_permuted = apply_permutations(&grid, &row_permutation, &col_permutation, &mirror, &9);
     for row in 0..9{
         for col in 0..9{
             print!("{} ", grid_permuted[row*9+col]);
         }
         println!("");}
 
+    let mut grid = vec![0; 36];
+    let mut fields = vec![2, 4, 11, 14, 16, 18, 19, 21, 26, 27, 28, 31, 34, 35];
+
+    for field in fields{
+        grid[field] = 1;
+    }
+
+    println!("");
+    for row in 0..6{
+        for col in 0..6{
+            print!("{} ", grid[row*6+col]);
+        }
+        println!("");}
+    println!("");
+
+
+    let (row_permutation, col_permutation, mirror) = find_permutations(&grid, &6);
+    println!("{:?}", row_permutation);
+    println!("{:?}", col_permutation);
+    println!("{:?}", mirror);
+    let mut grid_permuted = apply_permutations(&grid, &row_permutation, &col_permutation, &mirror, &6);
+    for row in 0..6{
+        for col in 0..6{
+            print!("{} ", grid_permuted[row*6+col]);
+        }
+        println!("");}
+
+    let mut grid = vec![0; 16];
+    let mut fields = vec![2, 3, 6, 8, 10, 13];
+
+    for field in fields{
+        grid[field] = 1;
+    }
+
+    println!("");
+    for row in 0..4{
+        for col in 0..4{
+            print!("{} ", grid[row*4+col]);
+        }
+        println!("");}
+    println!("");
+
+    let (row_permutation, col_permutation, mirror) = find_permutations(&grid, &4);
+    println!("{:?}", row_permutation);
+    println!("{:?}", col_permutation);
+    println!("{:?}", mirror);
+    let mut grid_permuted = apply_permutations(&grid, &row_permutation, &col_permutation, &mirror, &4);
+    for row in 0..4{
+        for col in 0..4{
+            print!("{} ", grid_permuted[row*4+col]);
+        }
+        println!("");}
 }
 
