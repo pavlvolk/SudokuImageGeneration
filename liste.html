@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sudoku Auswahl</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2vw;
+            margin: 0;
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        button, select {
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+            border: none;
+            background-color: #eee;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover, select:hover {
+            background-color: #ddd;
+        }
+
+        .grid {
+            display: grid;
+            width: 100%;
+            max-width: 90vw;
+            aspect-ratio: 1 / 1;
+        }
+
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ccc;
+            background-color: white;
+            font-size: calc(0.8rem + 0.5vw);
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .cell input {
+            width: 100%;
+            height: 100%;
+            font-size: inherit;
+            border: none;
+            text-align: center;
+            background: transparent;
+        }
+
+        .cell input:focus {
+            outline: none;
+            background-color: #f0f0f0;
+        }
+
+        .cell.marked {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .thick-top { border-top: 3px solid black !important; }
+        .thick-left { border-left: 3px solid black !important; }
+        .thick-right { border-right: 3px solid black !important; }
+        .thick-bottom { border-bottom: 3px solid black !important; }
+
+        pre {
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 1rem;
+            width: 90vw;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+
+        #sudokuContainer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            width: 100%;
+            max-width: 100vw;
+            margin-top: 2rem;
+        }
+
+        #loader {
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            button, select {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .cell {
+                font-size: 1rem;
+            }
+        }
+    </style>
+
+</head>
+<body>
+<h1>Sudoku Auswahl</h1>
+
+<div class="controls">
+    <div class="button-group">
+        <button onclick="setGridSize(4)">4x4</button>
+        <button onclick="setGridSize(6)">6x6</button>
+        <button onclick="setGridSize(9)">9x9</button>
+    </div>
+
+    <label>
+        Modus:
+        <select id="modeSelector" onchange="changeMode()">
+            <option value="mark">Felder markieren</option>
+            <option value="input">Zahlen eingeben</option>
+        </select>
+    </label>
+
+    <button onclick="resetGrid()">Zurücksetzen</button>
+</div>
+
+<div id="grid" class="grid"></div>
+
+<button onclick="createSudoku()">Sudoku erstellen</button>
+<div id="loader">⏳ Lade Sudokus...</div>
+
+<div id="sudokuContainer"></div>
+
+<h2>Aktueller Zustand (gridState als 1D-Liste)</h2>
+<pre id="stateDisplay"></pre>
+
+<script>
+    let currentSize = 4;
+    let currentMode = 'mark';
+    let gridState = [];
+    const gridElement = document.getElementById("grid");
+    const modeSelector = document.getElementById("modeSelector");
+    const loader = document.getElementById("loader");
+    const sudokuContainer = document.getElementById("sudokuContainer");
+
+    function getBlockSize(size) {
+        if (size === 4) return [2, 2];
+        if (size === 6) return [2, 3];
+        if (size === 9) return [3, 3];
+        return [1, 1];
+    }
+
+    function createGrid(size) {
+        const [blockRows, blockCols] = getBlockSize(size);
+        gridElement.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+        gridElement.innerHTML = '';
+        gridState = Array(size * size).fill(0);
+
+        for (let row = 0; row < size; row++) {
+            for (let col = 0; col < size; col++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+
+                if (row % blockRows === 0) cell.classList.add('thick-top');
+                if (col % blockCols === 0) cell.classList.add('thick-left');
+                if (col === size - 1) cell.classList.add('thick-right');
+                if (row === size - 1) cell.classList.add('thick-bottom');
+
+                const index = row * size + col;
+
+                if (currentMode === 'input') {
+                    const input = document.createElement('input');
+                    input.setAttribute('maxlength', '1');
+                    input.setAttribute('type', 'text');
+                    input.addEventListener('input', (e) => {
+                        const val = e.target.value.replace(/[^1-9]/g, '').slice(0, 1);
+                        e.target.value = val;
+                        gridState[index] = val || 0;
+                        updateStateDisplay();
+                    });
+                    cell.appendChild(input);
+                } else {
+                    cell.addEventListener('click', () => {
+                        const marked = cell.classList.toggle('marked');
+                        gridState[index] = marked ? 1 : 0;
+                        updateStateDisplay();
+                    });
+                }
+
+                gridElement.appendChild(cell);
+            }
+        }
+
+        updateStateDisplay();
+    }
+
+    function setGridSize(size) {
+        currentSize = size;
+        createGrid(size);
+    }
+
+    function changeMode() {
+        currentMode = modeSelector.value;
+        createGrid(currentSize);
+    }
+
+    function resetGrid() {
+        createGrid(currentSize);
+    }
+
+    function updateStateDisplay() {
+        document.getElementById("stateDisplay").textContent = JSON.stringify(gridState, null, 2);
+    }
+
+    function createSudoku() {
+        const tupel = {
+            size: currentSize,
+            mode: currentMode,
+            state: [...gridState]
+        };
+
+        console.log("Sudoku-Tupel:", tupel);
+
+        loader.style.display = "block";
+        sudokuContainer.innerHTML = "";
+
+        setTimeout(() => {
+            loader.style.display = "none";
+            renderSudokuPreview(tupel);
+            renderSudokuPreview(tupel);
+        }, 1000);
+    }
+
+    function renderSudokuPreview(tupel) {
+        const container = document.createElement("div");
+        container.className = "grid";
+        container.style.gridTemplateColumns = `repeat(${tupel.size}, 40px)`;
+
+        const [blockRows, blockCols] = getBlockSize(tupel.size);
+
+        for (let row = 0; row < tupel.size; row++) {
+            for (let col = 0; col < tupel.size; col++) {
+                const index = row * tupel.size + col;
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+
+                if (row % blockRows === 0) cell.classList.add("thick-top");
+                if (col % blockCols === 0) cell.classList.add("thick-left");
+                if (col === tupel.size - 1) cell.classList.add("thick-right");
+                if (row === tupel.size - 1) cell.classList.add("thick-bottom");
+
+                const value = tupel.state[index];
+
+                if (tupel.mode === "mark") {
+                    if (value === 1) cell.classList.add("marked");
+                } else if (!isNaN(value) && value !== 0) {
+                    cell.textContent = value;
+                }
+
+                container.appendChild(cell);
+            }
+        }
+
+        sudokuContainer.appendChild(container);
+    }
+
+    createGrid(currentSize);
+</script>
+</body>
+</html>
