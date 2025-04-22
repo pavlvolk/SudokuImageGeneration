@@ -1,10 +1,13 @@
 pub fn sudoku_clauses(board_size: i16) -> Vec<Vec<i16>> {
     let mut clauses = vec![vec![]];
-
+    one_number_each(&clauses, board_size);
+    add_row_clauses(&clauses, board_size);
+    add_column_clauses(&clauses, board_size);
+    add_grid_clauses(&clauses, board_size);
     clauses
 }
 
-pub fn one_number_each(clauses: &mut [i16], board_size: i16) {
+pub fn one_number_each(mut clauses: &Vec<Vec<i16>>, board_size: i16) {
     //at least one number
     for r in 1..=board_size {
         for c in 1..=board_size {
@@ -28,7 +31,7 @@ pub fn one_number_each(clauses: &mut [i16], board_size: i16) {
     }
 }
 
-pub fn add_row_clauses(clauses: &mut [i16], board_size: i16) {
+pub fn add_row_clauses(mut clauses: &Vec<Vec<i16>>, board_size: i16) {
     //at least every number in each row
     for r in 1..=board_size {
         for val in 1..=board_size {
@@ -52,7 +55,7 @@ pub fn add_row_clauses(clauses: &mut [i16], board_size: i16) {
     }
 }
 
-pub fn add_column_clauses(clauses: &mut [i16], board_size: i16) {
+pub fn add_column_clauses(mut clauses: &Vec<Vec<i16>>, board_size: i16) {
     //at least every number in each row
     for c in 1..=board_size {
         for val in 1..=board_size {
@@ -76,7 +79,7 @@ pub fn add_column_clauses(clauses: &mut [i16], board_size: i16) {
     }
 }
 
-pub fn add_grid_clauses(clauses: &mut [i16], board_size: i16) {
+pub fn add_grid_clauses(mut clauses: &Vec<Vec<i16>>, board_size: i16) {
     let mut r_board_size:i16 = 0;
     let mut c_board_size:i16 = 0;
     match board_size {
