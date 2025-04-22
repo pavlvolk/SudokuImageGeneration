@@ -12,6 +12,7 @@ use apply_permutations::apply_permutations;
 
 fn main() {
 // Ensure the function definition exists and matches your intent:
+    println!("{:?}", sudoku_clauses::sudoku_clauses(9));
     possibilities_not_complete_first_column(&vec![1, 4, 6]);
     let mut grid = vec![0; 81];
     let mut fields = vec![0, 4, 9, 17, 18, 21, 25, 28, 29, 31, 32, 33, 40, 41, 42, 43, 45, 46, 50, 51, 54, 55, 60, 61, 67, 68, 73, 75, 76, 78 ];
