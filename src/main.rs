@@ -1,6 +1,10 @@
 mod sort;
 mod apply_permutations;
-mod possibilities_first_column; // Added to ensure the module is included
+mod possibilities_first_column;
+mod sudoku;
+mod sudoku_clauses;
+
+// Added to ensure the module is included
 use possibilities_first_column::possibilities_not_complete_first_column;
 
 use sort::find_permutations;
