@@ -26,6 +26,8 @@ fn main() {
         grid[field] = 1;
     }
 
+    //TODO hier brauche ich die Werte
+
     /*
     for row in 0..9{
         for col in 0..9{
