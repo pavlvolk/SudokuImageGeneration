@@ -22,7 +22,18 @@ impl Sudoku {
     pub fn unique(hints:Vec<i16>) -> bool{
         let (solvable, possible_sol) = Self::solvable(hints);
         if solvable {
-            //TODO implement the rejection of previous solution
+            let solution = possible_sol.unwrap();
+            let mut clauses = Self.standard_clauses.clone();
+            for var in solution {
+                if var > 0{
+                    clauses.push(-var);
+                }
+            }
+            let mut sat: Solver = Default::default();
+            for clause in clauses {
+                sat.add_clause(clause);
+            }
+            return sat.solve().unwrap()
         }
         false
     }
@@ -31,7 +42,7 @@ impl Sudoku {
         let mut sat: Solver = Default::default();
         let new_sudoku = Self::add_hints(hints);
         for clause in new_sudoku.standard_clauses {
-            sat.add_clause(clause)
+            sat.add_clause(clause);
         }
         let solvable = sat.solve().unwrap();
         if solvable{
