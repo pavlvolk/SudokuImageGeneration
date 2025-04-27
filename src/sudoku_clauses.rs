@@ -7,7 +7,7 @@ pub fn sudoku_clauses(board_size: i16) -> Vec<Vec<i16>> {
     clauses
 }
 
-pub fn one_number_each(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>> {
+fn one_number_each(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>> {
     let mut result:Vec<Vec<i16>> = clauses.clone();
     //at least one number
     for r in 1..=board_size {
@@ -33,7 +33,7 @@ pub fn one_number_each(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>
     result
 }
 
-pub fn add_row_clauses(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>> {
+fn add_row_clauses(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>> {
     let mut result:Vec<Vec<i16>> = clauses.clone();
     //at least every number in each row
     for r in 1..=board_size {
@@ -59,7 +59,7 @@ pub fn add_row_clauses(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>
     result
 }
 
-pub fn add_column_clauses(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>> {
+fn add_column_clauses(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>> {
     let mut result:Vec<Vec<i16>> = clauses.clone();
     //at least every number in each row
     for c in 1..=board_size {
@@ -85,7 +85,7 @@ pub fn add_column_clauses(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i
     result
 }
 
-pub fn add_grid_clauses(mut clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>> {
+fn add_grid_clauses(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>> {
     let mut result:Vec<Vec<i16>> = clauses.clone();
     let mut r_board_size:i16 = 0;
     let mut c_board_size:i16 = 0;
@@ -118,4 +118,10 @@ pub fn add_grid_clauses(mut clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec
 
 fn var_num(row: i16, column: i16, val: i16, board_size: i16) -> i16{
     (row-1) * board_size * board_size + (column-1) * board_size + val
+}
+
+pub fn add_hint(clauses: &Vec<Vec<i16>>, hint:i16, row:i16, col:i16, board_size:i16) -> Vec<Vec<i16>> {
+    let mut result:Vec<Vec<i16>> = clauses.clone();
+    result.push(vec![var_num(row, col, hint, board_size)]);
+    result
 }
