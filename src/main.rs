@@ -12,7 +12,22 @@ use apply_permutations::apply_permutations;
 
 fn main() {
 // Ensure the function definition exists and matches your intent:
-    println!("{:?}", sudoku_clauses::sudoku_clauses(9));
+    let clauses_9x9= sudoku_clauses::sudoku_clauses(9);
+    println!("{:?}", clauses_9x9);
+    let sudoku = sudoku::Sudoku::new(9, clauses_9x9);
+    let hints = vec![0;81];
+    let hints2 = vec![
+        5, 3, 0, 0, 7, 0, 0, 0, 0,
+        6, 0, 0, 1, 9, 5, 0, 0, 0,
+        0, 9, 8, 0, 0, 0, 0, 6, 0,
+        8, 0, 0, 0, 6, 0, 0, 0, 3,
+        4, 0, 0, 8, 0, 3, 0, 0, 1,
+        7, 0, 0, 0, 2, 0, 0, 0, 6,
+        0, 6, 0, 0, 0, 0, 2, 8, 0,
+        0, 0, 0, 4, 1, 9, 0, 0, 5,
+        0, 0, 0, 0, 8, 0, 0, 7, 9,
+    ];
+    println!("{:?}", sudoku::Sudoku::unique(sudoku, hints2));
     possibilities_not_complete_first_column(&vec![1, 4, 6]);
     let mut grid = vec![0; 81];
     let mut fields = vec![0, 4, 9, 17, 18, 21, 25, 28, 29, 31, 32, 33, 40, 41, 42, 43, 45, 46, 50, 51, 54, 55, 60, 61, 67, 68, 73, 75, 76, 78 ];
