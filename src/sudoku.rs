@@ -19,13 +19,29 @@ impl Sudoku {
         }
     }
 
-    fn solvable(hints: Vec<i16>) -> Some{
-        let mut sat: cadical::Solver = Default::default();
+    pub fn unique(hints:Vec<i16>) -> bool{
+        let (solvable, possible_sol) = Self::solvable(hints);
+        if solvable {
+            //TODO implement the rejection of previous solution
+        }
+        false
+    }
+
+    fn solvable(hints: Vec<i16>) -> (bool, Some(Vec<i16>)){
+        let mut sat: Solver = Default::default();
         let new_sudoku = Self::add_hints(hints);
         for clause in new_sudoku.standard_clauses {
             sat.add_clause(clause)
         }
-        sat.solve()
+        let solvable = sat.solve().unwrap();
+        if solvable{
+            let mut solution = vec![];
+            for var in 1..=sat.max_variable(){
+                solution.push(sat.value(var));
+            }
+            return (solvable, Some(solution))
+        }
+        (solvable, None)
     }
 
     fn find_column_row(sudoku: &Sudoku, pos:i16) -> (i16, i16) {
