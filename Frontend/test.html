@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sudoku Auswahl</title>
+
+    <!-- Einbindung von Bibliotheken für PDF-Erstellung und Screenshot-Funktion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        /* Grundlayout und Design */
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        /* Container für Steuerungselemente */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Layout für Button-Gruppe */
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Gestaltung von Buttons und Selects */
+        button, select {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            background-color: #eee;
+            border-radius: 5px;
+            transition: background-color 0.2s ease;
+        }
+
+        /* Hover-Effekt */
+        button:hover, select:hover {
+            background-color: #ddd;
+        }
+
+        /* Grid-Darstellung */
+        .grid {
+            display: grid;
+            gap: 0;
+            margin-bottom: 1rem;
+        }
+
+        /* Einzelne Zelle im Sudoku-Grid */
+        .cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            user-select: none;
+            box-sizing: border-box;
+        }
+
+        /* Markierte Zelle im Markierungsmodus */
+        .cell.marked {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        /* Eingabefeld in Zelle (Eingabemodus) */
+        .cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 1.2rem;
+            background: transparent;
+        }
+
+        /* Fokus-Stil für Eingabe */
+        .cell input:focus {
+            outline: none;
+            background-color: #f0f0f0;
+        }
+
+        /* Zusätzliche dicke Linien zur Abgrenzung von Blöcken */
+        .thick-top { border-top: 3px solid black !important; }
+        .thick-left { border-left: 3px solid black !important; }
+        .thick-right { border-right: 3px solid black !important; }
+        .thick-bottom { border-bottom: 3px solid black !important; }
+
+        /* Anzeige des aktuellen Zustands als JSON */
+        pre {
+            margin-top: 2rem;
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 1rem;
+            width: 90%;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+        }
+
+        /* Ladeanzeige */
+        #loader {
+            display: none;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        /* Container für das fertige Sudoku */
+        #sudokuContainer {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+<h1>Sudoku Auswahl</h1>
+
+<!-- Bedienfeld zur Auswahl der Grid-Größe und des Modus -->
+<div class="controls">
+    <div class="button-group">
+        <!-- Grid-Größe ändern -->
+        <button onclick="setGridSize(4)">4x4</button>
+        <button onclick="setGridSize(6)">6x6</button>
+        <button onclick="setGridSize(9)">9x9</button>
+    </div>
+
+    <!-- Auswahl des Modus: Markieren oder Eingabe -->
+    <label>
+        Modus:
+        <select id="modeSelector" onchange="changeMode()">
+            <option value="mark">Felder markieren</option>
+            <option value="input">Zahlen eingeben</option>
+        </select>
+    </label>
+
+    <!-- Grid zurücksetzen -->
+    <button onclick="resetGrid()">Zurücksetzen</button>
+</div>
+
+<!-- Container für das Hauptgrid -->
+<div id="grid" class="grid"></div>
+
+<!-- Button zum Erstellen eines Sudokus -->
+<button onclick="createSudoku()">Sudoku erstellen</button>
+
+<!-- Ladeindikator -->
+<div id="loader">⏳ Lade Sudokus...</div>
+
+<!-- Vorschau der erstellten Sudokus -->
+<div id="sudokuContainer"></div>
+
+<!-- Button zum Herunterladen der Vorschau -->
+<button id="downloadBtn" onclick="downloadSudokus()" style="display:none; margin-top: 1rem;">
+    Sudokus herunterladen
+</button>
+
+<!-- Änderungscounter -->
+<p id="changeCounter">Änderungen: 0</p>
+
+<script>
+    // Initialisierungen und globale Variablen
+    let changes = 0;
+    let currentSize = 9;
+    let currentMode = 'mark';
+    let gridState = [];
+    const gridElement = document.getElementById("grid");
+    const modeSelector = document.getElementById("modeSelector");
+    const loader = document.getElementById("loader");
+    const sudokuContainer = document.getElementById("sudokuContainer");
+
+    // Ermittelt die Blockgröße basierend auf der Grid-Größe
+    function getBlockSize(size) {
+        if (size === 4) return [2, 2];
+        if (size === 6) return [2, 3];
+        if (size === 9) return [3, 3];
+        return [1, 1];
+    }
+
+    // Erzeugt das Sudoku-Grid neu
+    function createGrid(size) {
+        const [blockRows, blockCols] = getBlockSize(size);
+        gridElement.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+        gridElement.innerHTML = '';
+        gridState = Array(size * size).fill(0);
+
+        for (let row = 0; row < size; row++) {
+            for (let col = 0; col < size; col++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+
+                // Blockränder hinzufügen
+                if (row % blockRows === 0) cell.classList.add('thick-top');
+                if (col % blockCols === 0) cell.classList.add('thick-left');
+                if (col === size - 1) cell.classList.add('thick-right');
+                if (row === size - 1) cell.classList.add('thick-bottom');
+
+                const index = row * size + col;
+
+                // Unterschiedliches Verhalten je nach Modus
+                if (currentMode === 'input') {
+                    const input = document.createElement('input');
+                    input.setAttribute('maxlength', '1');
+                    input.setAttribute('type', 'text');
+                    input.addEventListener('input', (e) => {
+                        const val = e.target.value.replace(/[^1-9]/g, '').slice(0, 1);
+                        e.target.value = val;
+                        gridState[index] = val || 0;
+                        changes++
+                        updateChangeCounter();
+                        updateStateDisplay();
+                    });
+                    cell.appendChild(input);
+                } else {
+                    cell.addEventListener('click', () => {
+                        const marked = cell.classList.toggle('marked');
+                        gridState[index] = marked ? 1 : 0;
+                        changes++
+                        updateChangeCounter();
+                        updateStateDisplay();
+                    });
+                }
+
+                gridElement.appendChild(cell);
+            }
+        }
+
+        updateStateDisplay();
+    }
+
+    // Aktualisiert den Zähler für Änderungen
+    function updateChangeCounter() {
+        document.getElementById("changeCounter").textContent = `Änderungen: ${changes}`;
+    }
+
+    // Ändert die Grid-Größe
+    function setGridSize(size) {
+        currentSize = size;
+        changes = 0;
+        updateChangeCounter();
+        createGrid(size);
+    }
+
+    // Ändert den Modus (Markierung oder Eingabe)
+    function changeMode() {
+        currentMode = modeSelector.value;
+        createGrid(currentSize);
+    }
+
+    // Setzt das Grid zurück
+    function resetGrid() {
+        changes = 0;
+        updateChangeCounter();
+        createGrid(currentSize);
+    }
+
+    // Zeigt aktuellen Zustand des Grids im JSON-Format (auskommentiert im HTML)
+    function updateStateDisplay() {
+        document.getElementById("stateDisplay").textContent = JSON.stringify(gridState, null, 2);
+    }
+
+    // Zeigt den Download-Button an
+    function showDownloadButton() {
+        document.getElementById("downloadBtn").style.display = "block";
+    }
+
+    // Erstellt eine Sudoku-Vorschau basierend auf dem aktuellen Zustand
+    function createSudoku() {
+        const tupel = {
+            size: currentSize,
+            mode: currentMode,
+            state: [...gridState]
+        };
+
+        console.log("Sudoku-Tupel:", tupel);
+
+        loader.style.display = "block";
+        sudokuContainer.innerHTML = "";
+        document.getElementById("downloadBtn").style.display = "none";
+
+        // Simuliertes Laden
+        setTimeout(() => {
+            loader.style.display = "none";
+
+            if (validTupel(tupel)) {
+                renderSudokuPreview(tupel);
+                showDownloadButton();
+            } else {
+                alert("Das markierte Sudoku ist ungültig!");
+            }
+        }, 1000);
+    }
+
+    // Prüft, ob das erstellte Sudoku gültig ist
+    function validTupel(tupel) {
+        if (tupel.size === 9 && changes < 17){
+            return false
+        }
+        const size = tupel.size;
+        const values = tupel.state;
+        const [blockRows, blockCols] = getBlockSize(size);
+
+        // Prüfung im Markierungsmodus
+        if (tupel.mode === "mark") {
+            const hasContent = values.some(v => v === 1);
+            if (!hasContent) return false;
+
+            if (!checkRowColDistribution(values, size)) return false;
+
+            return true;
+        }
+
+        // Prüfung im Eingabemodus
+        if (tupel.mode === "input") {
+            const isValidGroup = (group) => {
+                const nums = group.filter(val => val !== "0" && val !== "");
+                const numSet = new Set(nums);
+                return nums.length === numSet.size;
+            };
+
+            // Zeilen prüfen
+            for (let row = 0; row < size; row++) {
+                const rowVals = [];
+                for (let col = 0; col < size; col++) {
+                    const index = row * size + col;
+                    rowVals.push(values[index]);
+                }
+                if (!isValidGroup(rowVals)) return false;
+            }
+
+            // Spalten prüfen
+            for (let col = 0; col < size; col++) {
+                const colVals = [];
+                for (let row = 0; row < size; row++) {
+                    const index = row * size + col;
+                    colVals.push(values[index]);
+                }
+                if (!isValidGroup(colVals)) return false;
+            }
+
+            // Blöcke prüfen
+            for (let blockRow = 0; blockRow < size; blockRow += blockRows) {
+                for (let blockCol = 0; blockCol < size; blockCol += blockCols) {
+                    const blockVals = [];
+                    for (let r = 0; r < blockRows; r++) {
+                        for (let c = 0; c < blockCols; c++) {
+                            const row = blockRow + r;
+                            const col = blockCol + c;
+                            const index = row * size + col;
+                            blockVals.push(values[index]);
+                        }
+                    }
+                    if (!isValidGroup(blockVals)) return false;
+                }
+            }
+
+            if (!checkRowColDistribution(values, size)) return false;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    // Überprüft, ob die Verteilung der Eingaben sinnvoll ist
+    function checkRowColDistribution(values, size) {
+        const blockSize = size === 9 ? 3 : size === 6 || 4 ? 2 : 1;
+
+        // Überprüfung von Zeilenblöcken
+        for (let i = 0; i < size; i += blockSize) {
+            let filledRows = 0;
+            for (let r = i; r < i + blockSize; r++) {
+                const hasEntry = values.slice(r * size, r * size + size).some(v => v !== 0 && v !== "0" && v !== "");
+                if (hasEntry) filledRows++;
+            }
+            if ((blockSize === 3 && filledRows < 2) || (blockSize === 2 && filledRows < 1)) return false;
+        }
+
+        // Überprüfung von Spaltenblöcken
+        for (let i = 0; i < size; i += blockSize) {
+            let filledCols = 0;
+            for (let c = i; c < i + blockSize; c++) {
+                let hasEntry = false;
+                for (let r = 0; r < size; r++) {
+                    const index = r * size + c;
+                    if (values[index] !== 0 && values[index] !== "0" && values[index] !== "") {
+                        hasEntry = true;
+                        break;
+                    }
+                }
+                if (hasEntry) filledCols++;
+            }
+            if ((blockSize === 3 && filledCols < 2) || (blockSize === 2 && filledCols < 1)) return false;
+        }
+
+        return true;
+    }
+
+    // Rendern der Sudoku-Vorschau
+    function renderSudokuPreview(tupel) {
+        const container = document.createElement("div");
+        container.className = "grid";
+        container.style.gridTemplateColumns = `repeat(${tupel.size}, 40px)`;
+
+        const [blockRows, blockCols] = getBlockSize(tupel.size);
+
+        for (let row = 0; row < tupel.size; row++) {
+            for (let col = 0; col < tupel.size; col++) {
+                const index = row * tupel.size + col;
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+
+                // Blockränder setzen
+                if (row % blockRows === 0) cell.classList.add("thick-top");
+                if (col % blockCols === 0) cell.classList.add("thick-left");
+                if (col === tupel.size - 1) cell.classList.add("thick-right");
+                if (row === tupel.size - 1) cell.classList.add("thick-bottom");
+
+                const value = tupel.state[index];
+
+                if (tupel.mode === "mark") {
+                    if (value === 1) cell.classList.add("marked");
+                } else if (!isNaN(value) && value !== 0) {
+                    cell.textContent = value;
+                }
+
+                container.appendChild(cell);
+            }
+        }
+
+        sudokuContainer.appendChild(container);
+    }
+
+    // Download als PDF
+    async function downloadSudokus() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        const container = document.getElementById("sudokuContainer");
+
+        await html2canvas(container).then((canvas) => {
+            const imgData = canvas.toDataURL("image/png");
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const imgProps = doc.getImageProperties(imgData);
+            const ratio = imgProps.width / imgProps.height;
+            const imgWidth = pageWidth - 20;
+            const imgHeight = imgWidth / ratio;
+
+            doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+            doc.save("sudokus.pdf");
+        });
+    }
+
+    // Initiales Grid laden
+    createGrid(currentSize);
+</script>
+</body>
+</html>
