@@ -17,11 +17,14 @@ pub fn possibilities_first_column_nine() -> Vec<Vec<usize>> {
     ];
     let results = find_unique_combinations(&lists);
 
+    /*
     for result in results.iter() {
         println!("{:?}", result);
     }
     println!("");
     println!("Belegungen für Neun: {}", results.len());
+
+     */
     results
 }
 /*

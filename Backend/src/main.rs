@@ -2,12 +2,13 @@ mod sort;
 mod apply_permutations;
 mod possibilities_first_column;
 mod set_values;
-
+mod fill_grid;
 // Added to ensure the module is included
 
 use std::time::Instant;
 use sort::find_permutations;
 use apply_permutations::apply_permutations;
+use crate::fill_grid::fill_grid;
 use crate::possibilities_first_column::{possibilities_first_column_nine, possibilities_first_column_six, possibilities_not_complete_first_column};
 use crate::set_values::set_values;
 
@@ -26,7 +27,7 @@ fn main() {
         grid[field] = 1;
     }
 
-    //TODO hier brauche ich die Werte
+    fill_grid(&grid, &9);
 
     /*
     for row in 0..9{
@@ -38,6 +39,7 @@ fn main() {
 
      */
 
+    /*
     let (row_permutation, col_permutation, mirror) = find_permutations(&grid, &9);
     println!("{:?}", row_permutation);
     println!("{:?}", col_permutation);
@@ -50,6 +52,8 @@ fn main() {
         println!("");}
 
     set_values(&grid_permuted, &9);
+
+     */
 
     /*
     let mut grid = vec![0; 36];

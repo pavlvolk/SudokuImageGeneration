@@ -70,7 +70,6 @@ pub fn set_values(grid: &[usize], grid_size: &usize) -> HashSet<Vec<usize>> {
                 value_grid[i * GRID_SIZE] = first_column[i-1];
             }
             while(results.len() < amount_of_field_per_column * column_number) {
-                println!("{}", results.len());
                 find_random_combinations(&list, &constraint_list, &value_grid, grid, &GRID_SIZE, &mut results);
             }
             column_number += 1;
