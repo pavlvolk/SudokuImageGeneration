@@ -1,1 +1,8 @@
-/target
+*
+!/Backend/
+!/Backend/**
+!/Frontend/
+!/Frontend/**
+!.gitignore
+!README.md
+
