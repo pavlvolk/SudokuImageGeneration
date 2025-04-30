@@ -9,6 +9,11 @@ pub struct Sudoku{
 }
 
 impl Sudoku {
+    
+    /**
+    *   This method creates another sudoku with the standard restrictions.
+    *   You can reuse this sudoku template with different hints since they will not be added.
+    */
     pub fn new(board_size: i32) -> Sudoku {
         assert!(board_size == 4 || board_size == 6 || board_size == 9);
         Sudoku {
@@ -16,6 +21,11 @@ impl Sudoku {
             standard_clauses: sudoku_clauses::sudoku_clauses(board_size)
         }
     }
+
+    /**
+    *   This method calculates whether the sudoku is unique or not given the hints.
+    *   @returns bool The boolean if the sudoku is unique.
+    */
 
     pub fn unique(&mut self, hints: &Vec<usize>) -> bool{
         let (solvable, possible_sol) = Self::solvable(&self, &hints);
@@ -36,6 +46,11 @@ impl Sudoku {
         }
         false
     }
+
+    /**
+    *   This method calculates whether the sudoku is solvable given the hints and optionally the solution if it's available.
+    *   @returns (bool, Option<Vec<i32>>) Boolean if it is solvable and possible solution.
+    */
 
     pub fn solvable(&self, hints: &Vec<usize>) -> (bool, Option<Vec<i32>>){
         let mut sat: Solver = Solver::new();
