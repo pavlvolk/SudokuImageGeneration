@@ -22,6 +22,12 @@ use crate::testen_Wahrscheinlichkeit::csv_tests;
 fn main() {
 /*
     let start = Instant::now();
+    
+    let mut s = sudoku::Sudoku::new(9);
+    let hints:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0,4,0,8,0,2];
+    let h1 = vec![0; 81];
+    println!("{}", sudoku::Sudoku::unique(&mut s, &hints));
+    println!("{}", sudoku::Sudoku::unique(&mut s, &h1));
 /*
     possibilities_first_column_six();
     possibilities_first_column_nine();
