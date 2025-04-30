@@ -1,5 +1,5 @@
 pub fn sudoku_clauses(board_size: i32) -> Vec<Vec<i32>> {
-    let mut clauses = vec![vec![]];
+    let mut clauses = vec![];
     one_number_each(&mut clauses, board_size);
     add_row_clauses(&mut clauses, board_size);
     add_column_clauses(&mut clauses, board_size);

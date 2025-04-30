@@ -66,7 +66,7 @@ impl Sudoku {
         let hints_i32 = Self::switch_to_i32(hints);
         let mut clauses = self.standard_clauses.clone();
         for i in 0..hints.len() {
-            if hints[i] > 0 {
+            if hints_i32[i] > 0 {
                 let (row, col) = Self::find_column_row(&self, i as i32);
                 add_hint(&mut clauses, hints_i32[i], row, col, self.board_size);
             }
