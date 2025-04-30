@@ -4,6 +4,7 @@ mod possibilities_first_column;
 mod set_values;
 mod fill_grid;
 mod sudoku_clauses;
+mod sudoku;
 // Added to ensure the module is included
 
 use std::time::Instant;
