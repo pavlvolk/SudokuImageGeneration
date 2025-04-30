@@ -99,6 +99,7 @@ pub fn add_grid_clauses(clauses: &mut Vec<Vec<i32>>, board_size: i32){
                 }
                 for i in 0..block_clauses.len() {
                     for j in i+1..block_clauses.len() {
+
                         clauses.push(vec![-block_clauses[i], -block_clauses[j]]);
                     }
                 }
@@ -111,6 +112,7 @@ pub fn add_grid_clauses(clauses: &mut Vec<Vec<i32>>, board_size: i32){
 fn var_num(row: i32, column: i32, val: i32, board_size: i32) -> i32{
     (row-1) * board_size * board_size + (column-1) * board_size + val
 }
+
 
 pub fn add_hint(clauses: &mut Vec<Vec<i32>>, hint:i32, row:i32, col:i32, board_size:i32){
     clauses.push(vec![var_num(row, col, hint, board_size)]);

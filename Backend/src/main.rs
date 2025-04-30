@@ -3,8 +3,10 @@ mod apply_permutations;
 mod possibilities_first_column;
 mod set_values;
 mod fill_grid;
-mod sudoku_clauses;
 mod sudoku;
+mod sudoku_clauses;
+mod set_values_from_solution;
+mod testen_Wahrscheinlichkeit;
 // Added to ensure the module is included
 
 use std::time::Instant;
@@ -13,8 +15,12 @@ use apply_permutations::apply_permutations;
 use crate::fill_grid::fill_grid;
 use crate::possibilities_first_column::{possibilities_first_column_nine, possibilities_first_column_six, possibilities_not_complete_first_column};
 use crate::set_values::set_values;
+use crate::set_values_from_solution::set_values_from_solution;
+use crate::sudoku_clauses::sudoku_clauses;
+use crate::testen_Wahrscheinlichkeit::csv_tests;
 
 fn main() {
+/*
     let start = Instant::now();
     
     let mut s = sudoku::Sudoku::new(9);
@@ -35,7 +41,10 @@ fn main() {
         grid[field] = 1;
     }
 
-    fill_grid(&grid, &9);
+    let (results, row_permutation, col_permutation, mirror) = fill_grid(&grid, &9);
+    for result in results{
+        println!("{:?}", result);
+    }
 
     /*
     for row in 0..9{
@@ -125,5 +134,16 @@ fn main() {
 
     let duration = start.elapsed();
     println!("Dauer: {:?}", duration);
+
+ */
+
+
+    if let Err(e) = csv_tests("C:/Users/Hanne/PycharmProjects/SATvsCSP/sudoku_test_set_9x9.txt") {
+        eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
+    }
+
+
+
+
 }
 

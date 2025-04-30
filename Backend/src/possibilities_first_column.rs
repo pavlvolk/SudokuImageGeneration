@@ -89,7 +89,7 @@ pub fn possibilities_not_complete_first_column(fields_of_first_columns: &Vec<usi
         }
         new_combinations.insert(new_combination);
     }
-    println!("Anzahl der möglichen Belegungen: {}", new_combinations.len());
+    //println!("Anzahl der möglichen Belegungen: {}", new_combinations.len());
     new_combinations
 }
 
