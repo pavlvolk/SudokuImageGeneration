@@ -55,8 +55,7 @@ pub fn add_row_clauses(clauses: &mut Vec<Vec<i32>>, board_size: i32){
     }
 }
 
-pub fn add_column_clauses(clauses: &Vec<Vec<i32>>, board_size: i32) -> Vec<Vec<i32>> {
-    let mut result:Vec<Vec<i32>> = clauses.clone();
+pub fn add_column_clauses(clauses: &mut Vec<Vec<i32>>, board_size: i32){
     //at least every number in each row
     for c in 1..=board_size {
         for val in 1..=board_size {
@@ -64,7 +63,7 @@ pub fn add_column_clauses(clauses: &Vec<Vec<i32>>, board_size: i32) -> Vec<Vec<i
             for r in 1..=board_size {
                 row_clauses.push(var_num(r, c, val, board_size))
             }
-            result.push(row_clauses);
+            clauses.push(row_clauses);
         }
     }
 
@@ -73,16 +72,14 @@ pub fn add_column_clauses(clauses: &Vec<Vec<i32>>, board_size: i32) -> Vec<Vec<i
         for val in 1..=board_size {
             for r1 in 1..board_size {
                 for r2 in r1+1..=board_size {
-                    result.push(vec![-var_num(r1, c, val, board_size), -var_num(r2, c, val, board_size)])
+                    clauses.push(vec![-var_num(r1, c, val, board_size), -var_num(r2, c, val, board_size)])
                 }
             }
         }
     }
-    result
 }
 
-pub fn add_grid_clauses(mut clauses: &Vec<Vec<i32>>, board_size: i32) -> Vec<Vec<i32>> {
-    let mut result:Vec<Vec<i32>> = clauses.clone();
+pub fn add_grid_clauses(mut clauses: &Vec<Vec<i32>>, board_size: i32){
     let mut r_board_size:i32 = 0;
     let mut c_board_size:i32 = 0;
     match board_size {
@@ -102,14 +99,13 @@ pub fn add_grid_clauses(mut clauses: &Vec<Vec<i32>>, board_size: i32) -> Vec<Vec
                 }
                 for i in 0..block_clauses.len() {
                     for j in 0..block_clauses.len() {
-                        result.push(vec![-block_clauses[i], -block_clauses[j]]);
+                        clauses.push(vec![-block_clauses[i], -block_clauses[j]]);
                     }
                 }
-                result.push(block_clauses);
+                clauses.push(block_clauses);
             }
         }
     }
-    result
 }
 
 fn var_num(row: i32, column: i32, val: i32, board_size: i32) -> i32{
@@ -119,5 +115,5 @@ fn var_num(row: i32, column: i32, val: i32, board_size: i32) -> i32{
 pub fn add_hint(clauses: &Vec<Vec<i32>>, hint:i32, row:i32, col:i32, board_size:i32) -> Vec<Vec<i32>> {
     let mut result:Vec<Vec<i32>> = clauses.clone();
     result.push(vec![var_num(row, col, hint, board_size)]);
-        result
+    result
 }
