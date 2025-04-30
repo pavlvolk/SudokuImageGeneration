@@ -1,14 +1,13 @@
 pub fn sudoku_clauses(board_size: i16) -> Vec<Vec<i16>> {
     let mut clauses = vec![vec![]];
-    clauses = one_number_each(&clauses, board_size);
+    one_number_each(&mut clauses, board_size);
     clauses = add_row_clauses(&clauses, board_size);
     clauses = add_column_clauses(&clauses, board_size);
     clauses = add_grid_clauses(&clauses, board_size);
     clauses
 }
 
-pub fn one_number_each(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>> {
-    let mut result:Vec<Vec<i16>> = clauses.clone();
+pub fn one_number_each(clauses: &mut Vec<Vec<i16>>, board_size: i16){
     //at least one number
     for r in 1..=board_size {
         for c in 1..=board_size {
@@ -16,7 +15,7 @@ pub fn one_number_each(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>
             for val in 1..=board_size {
                 cell_clauses.push(var_num(r, c, val, board_size))
             }
-            result.push(cell_clauses);
+            clauses.push(cell_clauses);
         }
     }
 
@@ -25,12 +24,11 @@ pub fn one_number_each(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>
         for c in 1..=board_size {
             for val1 in 1..board_size {
                 for val2 in val1+1..=board_size {
-                    result.push(vec![-var_num(r, c, val1, board_size), -var_num(r, c, val2, board_size)])
+                    clauses.push(vec![-var_num(r, c, val1, board_size), -var_num(r, c, val2, board_size)])
                 }
             }
         }
     }
-    result
 }
 
 pub fn add_row_clauses(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>> {

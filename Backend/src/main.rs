@@ -3,6 +3,7 @@ mod apply_permutations;
 mod possibilities_first_column;
 mod set_values;
 mod fill_grid;
+mod sudoku_clauses;
 // Added to ensure the module is included
 
 use std::time::Instant;
