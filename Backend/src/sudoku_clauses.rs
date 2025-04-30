@@ -1,4 +1,4 @@
-pub fn sudoku_clauses(board_size: i16) -> Vec<Vec<i16>> {
+pub fn sudoku_clauses(board_size: i32) -> Vec<Vec<i32>> {
     let mut clauses = vec![vec![]];
     one_number_each(&mut clauses, board_size);
     add_row_clauses(&mut clauses, board_size);
@@ -7,11 +7,11 @@ pub fn sudoku_clauses(board_size: i16) -> Vec<Vec<i16>> {
     clauses
 }
 
-pub fn one_number_each(clauses: &mut Vec<Vec<i16>>, board_size: i16){
+pub fn one_number_each(clauses: &mut Vec<Vec<i32>>, board_size: i32){
     //at least one number
     for r in 1..=board_size {
         for c in 1..=board_size {
-            let mut cell_clauses:Vec<i16> = vec![];
+            let mut cell_clauses:Vec<i32> = vec![];
             for val in 1..=board_size {
                 cell_clauses.push(var_num(r, c, val, board_size))
             }
@@ -31,11 +31,11 @@ pub fn one_number_each(clauses: &mut Vec<Vec<i16>>, board_size: i16){
     }
 }
 
-pub fn add_row_clauses(clauses: &mut Vec<Vec<i16>>, board_size: i16){
+pub fn add_row_clauses(clauses: &mut Vec<Vec<i32>>, board_size: i32){
     //at least every number in each row
     for r in 1..=board_size {
         for val in 1..=board_size {
-            let mut row_clauses:Vec<i16> = vec![];
+            let mut row_clauses:Vec<i32> = vec![];
             for c in 1..=board_size {
                 row_clauses.push(var_num(r, c, val, board_size))
             }
@@ -55,12 +55,12 @@ pub fn add_row_clauses(clauses: &mut Vec<Vec<i16>>, board_size: i16){
     }
 }
 
-pub fn add_column_clauses(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>> {
-    let mut result:Vec<Vec<i16>> = clauses.clone();
+pub fn add_column_clauses(clauses: &Vec<Vec<i32>>, board_size: i32) -> Vec<Vec<i32>> {
+    let mut result:Vec<Vec<i32>> = clauses.clone();
     //at least every number in each row
     for c in 1..=board_size {
         for val in 1..=board_size {
-            let mut row_clauses:Vec<i16> = vec![];
+            let mut row_clauses:Vec<i32> = vec![];
             for r in 1..=board_size {
                 row_clauses.push(var_num(r, c, val, board_size))
             }
@@ -81,10 +81,10 @@ pub fn add_column_clauses(clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i
     result
 }
 
-pub fn add_grid_clauses(mut clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec<i16>> {
-    let mut result:Vec<Vec<i16>> = clauses.clone();
-    let mut r_board_size:i16 = 0;
-    let mut c_board_size:i16 = 0;
+pub fn add_grid_clauses(mut clauses: &Vec<Vec<i32>>, board_size: i32) -> Vec<Vec<i32>> {
+    let mut result:Vec<Vec<i32>> = clauses.clone();
+    let mut r_board_size:i32 = 0;
+    let mut c_board_size:i32 = 0;
     match board_size {
         4 => {r_board_size = 2; c_board_size = 2},
         6 => {r_board_size = 2; c_board_size = 3},
@@ -94,7 +94,7 @@ pub fn add_grid_clauses(mut clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec
     for br in 0..c_board_size {
         for bc in 0..r_board_size {
             for val in 1..=board_size {
-                let mut block_clauses:Vec<i16> = vec![];
+                let mut block_clauses:Vec<i32> = vec![];
                 for r in 1 + br * r_board_size..1 + (br + 1) * r_board_size {
                     for c in 1 + bc * c_board_size..1 + (bc + 1) * c_board_size {
                         block_clauses.push(var_num(r, c, val, board_size))
@@ -112,6 +112,12 @@ pub fn add_grid_clauses(mut clauses: &Vec<Vec<i16>>, board_size: i16) -> Vec<Vec
     result
 }
 
-fn var_num(row: i16, column: i16, val: i16, board_size: i16) -> i16{
+fn var_num(row: i32, column: i32, val: i32, board_size: i32) -> i32{
     (row-1) * board_size * board_size + (column-1) * board_size + val
+}
+
+pub fn add_hint(clauses: &Vec<Vec<i32>>, hint:i32, row:i32, col:i32, board_size:i32) -> Vec<Vec<i32>> {
+    let mut result:Vec<Vec<i32>> = clauses.clone();
+    result.push(vec![var_num(row, col, hint, board_size)]);
+        result
 }
