@@ -9,7 +9,7 @@ pub struct Sudoku{
 }
 
 impl Sudoku {
-    pub fn new(board_size: i32, clauses: Vec<Vec<i32>>) -> Sudoku {
+    pub fn new(board_size: i32) -> Sudoku {
         assert!(board_size == 4 || board_size == 6 || board_size == 9);
         Sudoku {
             board_size,
