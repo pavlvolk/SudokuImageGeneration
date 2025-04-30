@@ -1,5 +1,5 @@
 pub fn sudoku_clauses(board_size: i32) -> Vec<Vec<i32>> {
-    let mut clauses = vec![];
+    let mut clauses = Vec::new();
     one_number_each(&mut clauses, board_size);
     add_row_clauses(&mut clauses, board_size);
     add_column_clauses(&mut clauses, board_size);
@@ -11,7 +11,7 @@ pub fn one_number_each(clauses: &mut Vec<Vec<i32>>, board_size: i32){
     //at least one number
     for r in 1..=board_size {
         for c in 1..=board_size {
-            let mut cell_clauses:Vec<i32> = vec![];
+            let mut cell_clauses:Vec<i32> = Vec::new();
             for val in 1..=board_size {
                 cell_clauses.push(var_num(r, c, val, board_size))
             }
@@ -35,7 +35,7 @@ pub fn add_row_clauses(clauses: &mut Vec<Vec<i32>>, board_size: i32){
     //at least every number in each row
     for r in 1..=board_size {
         for val in 1..=board_size {
-            let mut row_clauses:Vec<i32> = vec![];
+            let mut row_clauses:Vec<i32> = Vec::new();
             for c in 1..=board_size {
                 row_clauses.push(var_num(r, c, val, board_size))
             }
@@ -59,7 +59,7 @@ pub fn add_column_clauses(clauses: &mut Vec<Vec<i32>>, board_size: i32){
     //at least every number in each row
     for c in 1..=board_size {
         for val in 1..=board_size {
-            let mut row_clauses:Vec<i32> = vec![];
+            let mut row_clauses:Vec<i32> = Vec::new();
             for r in 1..=board_size {
                 row_clauses.push(var_num(r, c, val, board_size))
             }
@@ -91,7 +91,7 @@ pub fn add_grid_clauses(clauses: &mut Vec<Vec<i32>>, board_size: i32){
     for br in 0..c_board_size {
         for bc in 0..r_board_size {
             for val in 1..=board_size {
-                let mut block_clauses:Vec<i32> = vec![];
+                let mut block_clauses:Vec<i32> = Vec::new();
                 for r in 1 + br * r_board_size..1 + (br + 1) * r_board_size {
                     for c in 1 + bc * c_board_size..1 + (bc + 1) * c_board_size {
                         block_clauses.push(var_num(r, c, val, board_size))
