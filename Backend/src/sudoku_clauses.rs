@@ -2,8 +2,8 @@ pub fn sudoku_clauses(board_size: i32) -> Vec<Vec<i32>> {
     let mut clauses = vec![vec![]];
     one_number_each(&mut clauses, board_size);
     add_row_clauses(&mut clauses, board_size);
-    clauses = add_column_clauses(&clauses, board_size);
-    clauses = add_grid_clauses(&clauses, board_size);
+    add_column_clauses(&mut clauses, board_size);
+    add_grid_clauses(&mut clauses, board_size);
     clauses
 }
 
@@ -79,7 +79,7 @@ pub fn add_column_clauses(clauses: &mut Vec<Vec<i32>>, board_size: i32){
     }
 }
 
-pub fn add_grid_clauses(mut clauses: &Vec<Vec<i32>>, board_size: i32){
+pub fn add_grid_clauses(clauses: &mut Vec<Vec<i32>>, board_size: i32){
     let mut r_board_size:i32 = 0;
     let mut c_board_size:i32 = 0;
     match board_size {
