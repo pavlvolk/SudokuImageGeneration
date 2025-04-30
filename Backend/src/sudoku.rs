@@ -13,6 +13,7 @@ impl Sudoku {
     /**
     *   This method creates another sudoku with the standard restrictions.
     *   You can reuse this sudoku template with different hints since they will not be added.
+    *   @returns Sudoku The created sudoku.
     */
     pub fn new(board_size: i32) -> Sudoku {
         assert!(board_size == 4 || board_size == 6 || board_size == 9);
