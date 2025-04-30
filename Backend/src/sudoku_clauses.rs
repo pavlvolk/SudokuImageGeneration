@@ -98,7 +98,7 @@ pub fn add_grid_clauses(clauses: &mut Vec<Vec<i32>>, board_size: i32){
                     }
                 }
                 for i in 0..block_clauses.len() {
-                    for j in 0..block_clauses.len() {
+                    for j in i+1..block_clauses.len() {
                         clauses.push(vec![-block_clauses[i], -block_clauses[j]]);
                     }
                 }

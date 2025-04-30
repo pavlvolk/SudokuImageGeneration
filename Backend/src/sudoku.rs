@@ -13,11 +13,11 @@ impl Sudoku {
         assert!(board_size == 4 || board_size == 6 || board_size == 9);
         Sudoku {
             board_size,
-            standard_clauses: sudoku_clauses(board_size)
+            standard_clauses: sudoku_clauses::sudoku_clauses(board_size)
         }
     }
 
-    pub fn unique(&mut self, hints:Vec<i32>) -> bool{
+    pub fn unique(&mut self, hints: &Vec<usize>) -> bool{
         let (solvable, possible_sol) = Self::solvable(&self, &hints);
         if solvable {
             let solution = possible_sol.unwrap();
@@ -37,7 +37,7 @@ impl Sudoku {
         false
     }
 
-    fn solvable(&self, hints: &Vec<i32>) -> (bool, Option<Vec<i32>>){
+    pub fn solvable(&self, hints: &Vec<usize>) -> (bool, Option<Vec<i32>>){
         let mut sat: Solver = Solver::new();
         let new_sudoku = Self::add_hints(self, &hints);
         for clause in &new_sudoku.standard_clauses {
@@ -62,18 +62,27 @@ impl Sudoku {
         (row,col)
     }
 
-    fn add_hints(&self, hints: &Vec<i32>) -> Sudoku {
-        let mut standard_clauses = self.standard_clauses.clone();
+    fn add_hints(&self, hints: &Vec<usize>) -> Sudoku {
+        let hints_i32 = Self::switch_to_i32(hints);
+        let mut clauses = self.standard_clauses.clone();
         for i in 0..hints.len() {
             if hints[i] > 0 {
                 let (row, col) = Self::find_column_row(&self, i as i32);
-                add_hint(&mut standard_clauses, hints[i], row, col, self.board_size);
+                add_hint(&mut clauses, hints_i32[i], row, col, self.board_size);
             }
         }
         Sudoku{
             board_size: self.board_size,
-            standard_clauses,
+            standard_clauses: clauses,
         }
+    }
+    
+    fn switch_to_i32(vec: &Vec<usize>) -> Vec<i32>{
+        let mut res:Vec<i32> = Vec::new();
+        for value in vec {
+            res.push(*value as i32);
+        }
+        res
     }
 }
 
