@@ -3,7 +3,7 @@ use sudoku_clauses::add_hint;
 use crate::sudoku_clauses;
 
 pub struct Sudoku{
-    board_size: i32,
+    pub(crate) board_size: i32,
     standard_clauses:Vec<Vec<i32>>,
 }
 
@@ -96,6 +96,18 @@ impl Sudoku {
         let mut res:Vec<i32> = Vec::new();
         for value in vec {
             res.push(*value as i32);
+        }
+        res
+    }
+
+    pub fn to_list(vec: &mut Vec<i32>, board_size: i32) ->Vec<i32> {
+        let mut res: Vec<i32> = vec![0; (board_size*board_size) as usize];
+        for i in 0..vec.len() {
+            let var0 = vec[i]-1;
+            let row = var0 / (board_size*board_size);
+            let col = (var0 % (board_size * board_size)) / board_size;
+            let val = (var0 % board_size) + 1;
+            res[(row*board_size + col) as usize] = val;
         }
         res
     }
