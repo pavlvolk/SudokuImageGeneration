@@ -1,7 +1,6 @@
 use cadical::Solver;
 use sudoku_clauses::add_hint;
 use crate::sudoku_clauses;
-use crate::sudoku_clauses::sudoku_clauses;
 
 pub struct Sudoku{
     board_size: i32,

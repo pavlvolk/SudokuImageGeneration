@@ -13,15 +13,11 @@ fn process_list(list: Vec<usize>) -> (bool, usize) {
 
     let count_ones = transformed.iter().filter(|&&x| x == 1).count();
 
+
+    let mut sudoku = sudoku::Sudoku::new(9);
     let (results, row_permutation, col_permutation, mirror) = fill_grid(&transformed, &9);
     for result in results {
-        let mut new_result = vec![0; 81];
-        for i in 0..81 {
-            new_result[i] = result[i] as i32;
-        }
-        let clauses = sudoku_clauses(9);
-        let sudoku = sudoku::Sudoku::new(9, clauses);
-        let unique = sudoku::Sudoku::unique(sudoku, new_result);
+        let unique = sudoku::Sudoku::unique(&mut sudoku, &result);
         if unique {
             return (unique, count_ones);
         }
