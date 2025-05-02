@@ -4,7 +4,7 @@ use crate::sudoku::Sudoku;
 
 pub fn calculate_solution(list: &Vec<usize>, sudoku: &mut Sudoku, filled:bool) -> Option<Vec<i32>> {
     if !filled {
-        let (results, row_permutation, col_permutation, mirror) = fill_grid(&list, &9);
+        let (results, row_permutation, col_permutation, mirror) = fill_grid(&list, &(sudoku.board_size as usize));
         for result in results {
             let unique = Sudoku::unique(sudoku, &result);
             if unique {
