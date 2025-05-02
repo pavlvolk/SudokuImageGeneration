@@ -7,6 +7,7 @@ mod sudoku;
 mod sudoku_clauses;
 mod set_values_from_solution;
 mod testen_Wahrscheinlichkeit;
+mod calculation;
 // Added to ensure the module is included
 
 use std::time::Instant;
@@ -18,8 +19,19 @@ use crate::set_values::set_values;
 use crate::set_values_from_solution::set_values_from_solution;
 use crate::sudoku_clauses::sudoku_clauses;
 use crate::testen_Wahrscheinlichkeit::csv_tests;
+use crate::calculation::calculate_solution;
+use crate::sudoku::Sudoku;
 
 fn main() {
+    let hints:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
+    let mut s = Sudoku::new(9);
+    let hints1:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
+    let transformed: Vec<usize> = hints1
+        .into_iter()
+        .map(|x| if x == 0 { 0 } else { 1 })
+        .collect();
+    println!("{:?}", calculate_solution(&hints, &mut s, true).unwrap());
+    println!("{:?}", calculate_solution(&transformed, &mut s, false).unwrap());
 /*
     let start = Instant::now();
     
@@ -137,11 +149,11 @@ fn main() {
 
  */
 
-
+/*
     if let Err(e) = csv_tests("C:/Users/Hanne/PycharmProjects/SATvsCSP/sudoku_test_set_9x9.txt") {
         eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
     }
-
+*/
 
 
 
