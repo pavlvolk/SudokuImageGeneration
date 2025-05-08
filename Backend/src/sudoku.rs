@@ -4,7 +4,7 @@ use crate::sudoku_clauses;
 
 pub struct Sudoku{
     pub(crate) board_size: i32,
-    standard_clauses:Vec<Vec<i32>>,
+    standard_clauses:Vec<Vec<i32>>
 }
 
 impl Sudoku {
@@ -16,9 +16,10 @@ impl Sudoku {
     */
     pub fn new(board_size: i32) -> Sudoku {
         assert!(board_size == 4 || board_size == 6 || board_size == 9);
+        let clauses = sudoku_clauses::sudoku_clauses(board_size);
         Sudoku {
             board_size,
-            standard_clauses: sudoku_clauses::sudoku_clauses(board_size)
+            standard_clauses: clauses
         }
     }
 
@@ -27,24 +28,20 @@ impl Sudoku {
     *   @returns bool The boolean if the sudoku is unique.
     */
 
-    pub fn unique(&mut self, hints: &Vec<usize>) -> bool{
-        let (solvable, possible_sol) = Self::solvable(&self, &hints);
+    pub fn unique(&mut self, hints: &Vec<usize>, solver: &mut Solver) -> (bool, Option<Vec<i32>>){
+        let (solvable, possible_sol) = Self::solvable(self, &hints, solver);
         if solvable {
             let solution = possible_sol.unwrap();
-            let new_sudoku = Self::add_hints(&self, &hints);
-            let mut clauses = new_sudoku.standard_clauses;
             let mut forbidden:Vec<i32> = Vec::new();
-            for var in solution {
+            for var in &solution {
                 forbidden.push(-var);
             }
-            clauses.push(forbidden);
-            let mut sat: Solver = Solver::new();
-            for clause in &clauses {
-                sat.add_clause(clause.clone());
-            }
-            return !sat.solve().unwrap()
+            solver.add_clause(forbidden);
+            let hint_vec = Self::add_hints(&self, &hints);
+            let not_unique = solver.solve_with(hint_vec.into_iter());
+            return (!not_unique.unwrap(), Some(solution));
         }
-        false
+        (false, None)
     }
 
     /**
@@ -52,20 +49,17 @@ impl Sudoku {
     *   @returns (bool, Option<Vec<i32>>) Boolean if it is solvable and possible solution.
     */
 
-    pub fn solvable(&self, hints: &Vec<usize>) -> (bool, Option<Vec<i32>>){
-        let mut sat: Solver = Solver::new();
-        let new_sudoku = Self::add_hints(self, &hints);
-        for clause in &new_sudoku.standard_clauses {
-            sat.add_clause(clause.clone());
-        }
-        let solvable = sat.solve().unwrap();
+    pub fn solvable(&mut self, hints: &Vec<usize>, solver: &mut Solver) -> (bool, Option<Vec<i32>>){
+        let hint_iterator = Self::add_hints(self, &hints).into_iter();
+        let solvable = solver.solve_with(hint_iterator).unwrap();
         if solvable{
             let mut solution = Vec::new();
-            for var in 1..=sat.max_variable(){
-                if sat.value(var) == Some(true){
+            for var in 1..=solver.max_variable(){
+                if solver.value(var) == Some(true){
                     solution.push(var)
                 }
             }
+            println!("{:?}", Self::to_list(&mut solution, 9));
             return (solvable, Some(solution))
         }
         (solvable, None)
@@ -77,19 +71,16 @@ impl Sudoku {
         (row,col)
     }
 
-    fn add_hints(&self, hints: &Vec<usize>) -> Sudoku {
+    fn add_hints(&self, hints: &Vec<usize>) -> Vec<i32> {
         let hints_i32 = Self::switch_to_i32(hints);
-        let mut clauses = self.standard_clauses.clone();
+        let mut hint_clauses:Vec<i32> = Vec::new();
         for i in 0..hints.len() {
             if hints_i32[i] > 0 {
                 let (row, col) = Self::find_column_row(&self, i as i32);
-                add_hint(&mut clauses, hints_i32[i], row, col, self.board_size);
+                add_hint(&mut hint_clauses, hints_i32[i], row, col, self.board_size);
             }
         }
-        Sudoku{
-            board_size: self.board_size,
-            standard_clauses: clauses,
-        }
+        hint_clauses
     }
     
     fn switch_to_i32(vec: &Vec<usize>) -> Vec<i32>{
