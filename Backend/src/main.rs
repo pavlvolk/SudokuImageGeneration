@@ -21,7 +21,69 @@ use crate::sudoku_clauses::sudoku_clauses;
 use crate::testen_Wahrscheinlichkeit::csv_tests;
 use crate::calculation::calculate_solution;
 use crate::sudoku::Sudoku;
+use actix_cors::Cors;
+use actix_web::{post, web, App, HttpServer, HttpResponse};
+use serde::{Deserialize, Serialize};
 
+//Input structure
+#[derive(Deserialize)]
+struct Input {
+    data: Vec<usize>,
+    length: usize,
+    markingmode: bool,  
+}
+
+// Output structure
+#[derive(Serialize)]
+struct Output {
+    data: Vec<i32>,
+    hassolution: bool ,
+}
+
+
+#[post("/api/process-tuple")]
+async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
+    let result;
+    let mut output = Output {
+        data: vec![0; 81],
+        hassolution: false,
+    };
+    if input.length == 81 {
+        result = calculate_solution(&input.data, &mut Sudoku::new(81), input.markingmode);
+    }
+    else if input.length == 36 {
+        result = calculate_solution(&input.data, &mut Sudoku::new(36), input.markingmode);
+    }
+    else if input.length == 16 {
+        result = calculate_solution(&input.data, &mut Sudoku::new(16), input.markingmode);
+    }
+    else{
+        return HttpResponse::BadRequest().json("Wrong Dimension");
+    }
+    if result.is_none() {
+        HttpResponse::Ok().json(output)
+    }
+    else{
+        output.data = result.unwrap();
+        output.hassolution = true;
+        HttpResponse::Ok().json(output)
+    }
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    println!("81D Tuple processor running at http://localhost:8080");
+
+    HttpServer::new(|| {
+        App::new()
+            .wrap(Cors::default().allow_any_origin().allow_any_method().allow_any_header())
+            .service(process_tuple)
+    })
+        .bind("127.0.0.1:8080")?
+        .run()
+        .await
+}
+/*
 fn main() {
     
     let hints:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
@@ -162,3 +224,4 @@ fn main() {
 
 }
 
+*/
