@@ -1,11 +1,13 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::error::Error;
+use cadical::Solver;
 use crate::fill_grid::fill_grid;
 use crate::sudoku;
 use crate::sudoku_clauses::sudoku_clauses;
 
 fn process_list(list: Vec<usize>) -> (bool, usize) {
+    let mut solver = Solver::new();
     let transformed: Vec<usize> = list
         .into_iter()
         .map(|x| if x == 0 { 0 } else { 1 })
@@ -17,7 +19,7 @@ fn process_list(list: Vec<usize>) -> (bool, usize) {
     let mut sudoku = sudoku::Sudoku::new(9);
     let (results, row_permutation, col_permutation, mirror) = fill_grid(&transformed, &9);
     for result in results {
-        let unique = sudoku::Sudoku::unique(&mut sudoku, &result);
+        let (unique, _) = sudoku::Sudoku::unique(&mut sudoku, &result, &mut solver);
         if unique {
             return (unique, count_ones);
         }

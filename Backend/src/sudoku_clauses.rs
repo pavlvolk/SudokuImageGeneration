@@ -114,6 +114,6 @@ fn var_num(row: i32, column: i32, val: i32, board_size: i32) -> i32{
 }
 
 
-pub fn add_hint(clauses: &mut Vec<Vec<i32>>, hint:i32, row:i32, col:i32, board_size:i32){
-    clauses.push(vec![var_num(row, col, hint, board_size)]);
+pub fn add_hint(clauses: &mut Vec<i32>, hint:i32, row:i32, col:i32, board_size:i32){
+    clauses.push(var_num(row, col, hint, board_size));
 }
