@@ -20,15 +20,16 @@ pub fn calculate_solution(list: &Vec<usize>, sudoku: &mut Sudoku, filled:bool) -
     for clause in clauses {
         solver.add_clause(clause);
     }
+    let mut i = 1;
     if !filled {
         let (results, row_permutation, col_permutation, mirror) = fill_grid(&list, &(sudoku.board_size as usize));
         for result in results {
-            let instant = Instant::now();
+            println!("{}", i);
             let (unique, possible_sol) = Sudoku::unique(sudoku, &result, &mut solver);
-            println!("unique solution time: {:?}", instant.elapsed());
             if unique {
                 return Some(Sudoku::to_list(&mut possible_sol.unwrap(), sudoku.board_size));
             }
+            i += 1;
         }
     }else { 
         let (unique, possible_sol) = sudoku::Sudoku::unique(sudoku, &list, &mut solver);

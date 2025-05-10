@@ -12,6 +12,7 @@ impl Sudoku {
     /**
     *   This method creates another sudoku with the standard restrictions.
     *   You can reuse this sudoku template with different hints since they will not be added.
+    *
     *   @returns Sudoku The created sudoku.
     */
     pub fn new(board_size: i32) -> Sudoku {
@@ -25,7 +26,8 @@ impl Sudoku {
 
     /**
     *   This method calculates whether the sudoku is unique or not given the hints.
-    *   @returns bool The boolean if the sudoku is unique.
+    *
+    *   @returns (bool, Option<Vec >) Boolean if it is unique and possible solution. 
     */
 
     pub fn unique(&mut self, hints: &Vec<usize>, solver: &mut Solver) -> (bool, Option<Vec<i32>>){
@@ -46,6 +48,7 @@ impl Sudoku {
 
     /**
     *   This method calculates whether the sudoku is solvable given the hints and optionally the solution if it's available.
+    *
     *   @returns (bool, Option<Vec<i32>>) Boolean if it is solvable and possible solution.
     */
 
@@ -59,7 +62,6 @@ impl Sudoku {
                     solution.push(var)
                 }
             }
-            println!("{:?}", Self::to_list(&mut solution, 9));
             return (solvable, Some(solution))
         }
         (solvable, None)
