@@ -21,18 +21,43 @@ use crate::sudoku_clauses::sudoku_clauses;
 use crate::testen_Wahrscheinlichkeit::csv_tests;
 use crate::calculation::calculate_solution;
 use crate::sudoku::Sudoku;
+use dialoguer::{theme::ColorfulTheme, Select};
+use std::io::{self, Write};
+
 
 fn main() {
+    // Welcome Screen
+    println!("===============================");
+    println!(" Willkommen zum Rust CLI Tool ");
+    println!("===============================");
+    println!("Bitte wählen Sie eine Option aus:");
+    println!();
+
+    // Optionen anzeigen
+    let options = vec![
+        "Option 1: Beispielsudokus berechnen",
+        "Option 2: Zeiten testen",
+        "Option 3: Neue Methode",
+        "Option 4: Programm beenden",
+    ];
+
+    let selection = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Was möchten Sie tun?")
+        .items(&options)
+        .default(0)
+        .interact()
+        .unwrap();
+
+    match selection {
+        0 => option_1(),
+        1 => option_2(),
+        2 => option_3(),
+        3 => option_4(),
+        _ => println!("Ungültige Auswahl."),
+    }
+
     
-    let hints:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
-    let mut s = Sudoku::new(9);
-    let hints1:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
-    let transformed: Vec<usize> = hints1
-        .into_iter()
-        .map(|x| if x == 0 { 0 } else { 1 })
-        .collect();
-    println!("{:?}", calculate_solution(&hints, &mut s, true).unwrap());
-    println!("{:?}", calculate_solution(&transformed, &mut s, false).unwrap());
+    
     
      
 /*
@@ -153,12 +178,53 @@ fn main() {
  */
 
 
-    if let Err(e) = csv_tests("C:/Users/Hanne/PycharmProjects/SATvsCSP/sudoku_test_set_9x9.txt") {
+    
+
+
+
+
+}
+// Beispiel-Funktionen für Optionen
+fn option_1() {
+    let h = vec![
+        0, 0, 0, 0, 0, 0, 0, 1, 0,
+        4, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 2, 0, 0, 0, 0, 0, 0, 0,
+
+        0, 0, 0, 0, 5, 0, 4, 0, 7,
+        0, 0, 8, 0, 0, 0, 3, 0, 0,
+        0, 0, 1, 0, 9, 0, 0, 0, 0,
+
+        3, 0, 0, 4, 0, 0, 2, 0, 0,
+        0, 5, 0, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 8, 0, 6, 0, 0, 0,
+    ];
+
+    let hints:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
+    let mut s = Sudoku::new(9);
+    let hints1:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
+    let transformed: Vec<usize> = hints1
+        .into_iter()
+        .map(|x| if x == 0 { 0 } else { 1 })
+        .collect();
+    let t1: Vec<_> = h.into_iter().map(|x| if x == 0 { 0 } else { 1 }).collect();
+    //println!("{:?}", calculate_solution(&hints, &mut s, true).unwrap());
+    //println!("{:?}", calculate_solution(&transformed, &mut s, false).unwrap());
+    println!("{:?}", calculate_solution(&t1, &mut s, false).unwrap());
+}
+
+fn option_2() {
+    println!("Zeiten testen");
+    if let Err(e) = csv_tests("./sudoku_test_set_9x9.txt") {
         eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
     }
+}
 
+fn option_3() {
+    println!("Neue Methode");
+}
 
-
-
+fn option_4() {
+    println!("👋 Programm wird beendet. Auf Wiedersehen!");
 }
 
