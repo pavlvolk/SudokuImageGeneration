@@ -183,6 +183,7 @@
     const modeSelector = document.getElementById("modeSelector");
     const loader = document.getElementById("loader");
     const sudokuContainer = document.getElementById("sudokuContainer");
+    const serverUrl = "http://localhost:8080";
 
     // Ermittelt die Blockgröße basierend auf der Grid-Größe
     function getBlockSize(size) {
@@ -281,29 +282,49 @@
 
     // Erstellt eine Sudoku-Vorschau basierend auf dem aktuellen Zustand
     function createSudoku() {
-        const tupel = {
-            size: currentSize,
-            mode: currentMode,
-            state: [...gridState]
+        alert("createSudoku Funktion aufgerufen");
+        const payload = {
+                data: gridState,
+                length: currentSize * currentSize,
+                markingmode: currentMode === 'mark',
         };
+        alert(gridState);
+        alert(currentSize);
+        alert(payload.markingmode);
+        fetch(`${serverUrl}/api/process-tuple`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(result => {
+            loader.style.display = "none";
+            if (result.hassolution === false) {
+                alert("Das markierte Sudoku ist ungültig!");
+            } else {
+                // Create a tupel object that matches what renderSudokuPreview expects
+                  const tupel = {
+                      size: currentSize,
+                      state: result.data,
+                      mode: currentMode
+                  };
+                  renderSudokuPreview(tupel);
+                  showDownloadButton();
+              }
+            })
+            .catch(error => {
+                loader.style.display = "none";
+                alert("Es ist ein Fehler aufgetreten: " + error.message);
+                console.error("Error:", error);
+            });
 
         console.log("Sudoku-Tupel:", tupel);
 
         loader.style.display = "block";
         sudokuContainer.innerHTML = "";
         document.getElementById("downloadBtn").style.display = "none";
-
-        // Simuliertes Laden
-        setTimeout(() => {
-            loader.style.display = "none";
-
-            if (validTupel(tupel)) {
-                renderSudokuPreview(tupel);
-                showDownloadButton();
-            } else {
-                alert("Das markierte Sudoku ist ungültig!");
-            }
-        }, 1000);
     }
 
     // Prüft, ob das erstellte Sudoku gültig ist

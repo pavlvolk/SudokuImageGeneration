@@ -43,30 +43,33 @@ struct Output {
 
 #[post("/api/process-tuple")]
 async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
+    println!("Attempted Connection");
     let result;
     let mut output = Output {
         data: vec![0; 81],
         hassolution: false,
     };
     if input.length == 81 {
-        result = calculate_solution(&input.data, &mut Sudoku::new(81), input.markingmode);
+        result = calculate_solution(&input.data, &mut Sudoku::new(9), !input.markingmode);
+        println!("{:?}", result);
+        println!("{:?}", input.data);
     }
     else if input.length == 36 {
-        result = calculate_solution(&input.data, &mut Sudoku::new(36), input.markingmode);
+        result = calculate_solution(&input.data, &mut Sudoku::new(6), !input.markingmode);
     }
     else if input.length == 16 {
-        result = calculate_solution(&input.data, &mut Sudoku::new(16), input.markingmode);
+        result = calculate_solution(&input.data, &mut Sudoku::new(4), !input.markingmode);
     }
     else{
         return HttpResponse::BadRequest().json("Wrong Dimension");
     }
     if result.is_none() {
-        HttpResponse::Ok().json(output)
+        return HttpResponse::Ok().json(output);
     }
     else{
         output.data = result.unwrap();
         output.hassolution = true;
-        HttpResponse::Ok().json(output)
+        return HttpResponse::Ok().json(output);
     }
 }
 
