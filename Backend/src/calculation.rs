@@ -1,3 +1,6 @@
+use std::error::Error;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 use std::time::Instant;
 use cadical::Solver;
 use crate::fill_grid::fill_grid;
@@ -14,29 +17,62 @@ use crate::sudoku_clauses::sudoku_clauses;
 *   @param filled boolean if the hints is filled with values or just representation if a cell is filled or not.
 *   @return Option<Vec<i32>> the solution of the sudoku if it is unique.
 */
-pub fn calculate_solution(list: &Vec<usize>, sudoku: &mut Sudoku, filled:bool) -> Option<Vec<i32>> {
+pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bool) -> Result<Option<Vec<i32>>, Box<dyn Error>> {
     let mut solver = Solver::new();
     let clauses = sudoku_clauses(sudoku.board_size);
     for clause in clauses {
         solver.add_clause(clause);
     }
-    let mut i = 1;
     if !filled {
-        let (results, row_permutation, col_permutation, mirror) = fill_grid(&list, &(sudoku.board_size as usize));
-        for result in results {
-            println!("{}", i);
-            let (unique, possible_sol) = Sudoku::unique(sudoku, &result, &mut solver);
-            if unique {
-                return Some(Sudoku::to_list(&mut possible_sol.unwrap(), sudoku.board_size));
+        if sudoku.board_size == 4 || sudoku.board_size == 6 {
+            let mut i = 1;
+            let (results, row_permutation, col_permutation, mirror) = fill_grid(&list, &(sudoku.board_size as usize));
+            for result in results {
+                println!("{}", i);
+                let (unique, possible_sol) = Sudoku::unique(sudoku, &result, &mut solver);
+                if unique {
+                    return Ok(Some(Sudoku::to_list(&mut possible_sol.unwrap(), sudoku.board_size)));
+                }
+                i += 1;
             }
-            i += 1;
+        }else if sudoku.board_size == 9 {
+            let file = File::open("permuted_solutions.txt")?;
+            let reader = BufReader::new(file);
+
+
+            let mut count = 0;
+            let max_count = 100000;   //TODO in main übergeben
+            for line_result in reader.lines() {
+                if count > max_count{
+                    break
+                }
+                let line = line_result?;
+                let cleaned_line = line.trim().trim_start_matches('[').trim_end_matches(']');
+                let list: Vec<usize> = cleaned_line
+                    .split(',')
+                    .map(|s| s.trim().parse::<usize>())
+                    .collect::<Result<Vec<_>, _>>()?;
+
+                let mut grid_list = Vec::new();
+                for i in  0..81{
+                    grid_list.push(list[i]);
+                }
+
+
+                let (unique, possible_sol) = Sudoku::unique(&mut sudoku, &grid_list, &mut solver);
+                if unique {
+                    return Ok(Some(Sudoku::to_list(&mut possible_sol.unwrap(), sudoku.board_size)));
+                }
+                count += 1;
+
+            }
         }
-    }else { 
+    } else {
         let (unique, possible_sol) = sudoku::Sudoku::unique(sudoku, &list, &mut solver);
         if unique {
-            return Some(Sudoku::to_list(&mut possible_sol.unwrap(), sudoku.board_size))
+            return Ok(Some(Sudoku::to_list(&mut possible_sol.unwrap(), sudoku.board_size)));
         }
     }
-    return None;
+    return Ok(None);
 }
 
