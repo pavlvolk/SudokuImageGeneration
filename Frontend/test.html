@@ -282,15 +282,11 @@
 
     // Erstellt eine Sudoku-Vorschau basierend auf dem aktuellen Zustand
     function createSudoku() {
-        alert("createSudoku Funktion aufgerufen");
         const payload = {
                 data: gridState,
                 length: currentSize * currentSize,
                 markingmode: currentMode === 'mark',
         };
-        alert(gridState);
-        alert(currentSize);
-        alert(payload.markingmode);
         fetch(`${serverUrl}/api/process-tuple`, {
             method: 'POST',
             headers: {
