@@ -215,7 +215,7 @@ fn option_1() {
 
 fn option_2() {
     println!("Zeiten testen");
-    if let Err(e) = csv_tests("./sudoku_test_set_9x9.txt") {
+    if let Err(e) = csv_tests("C:/Users/Hanne/PycharmProjects/SATvsCSP/sudoku_test_set_9x9.txt") {
         eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
     }
 }

@@ -39,3 +39,4 @@ pub fn calculate_solution(list: &Vec<usize>, sudoku: &mut Sudoku, filled:bool) -
     }
     return None;
 }
+
