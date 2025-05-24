@@ -24,8 +24,7 @@ fn process_list(list: Vec<usize>) -> Result<Option<Vec<i32>>, Box<dyn Error> > {
     let count_ones = transformed.iter().filter(|&&x| x == 1).count();
     println!("Anzahl der 1s: {}", count_ones);
 
-
-    let file = File::open("permuted_solutions.txt")?;
+    let file = File::open("data/permuted_solutions.txt")?;
     let reader = BufReader::new(file);
 
 
