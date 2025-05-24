@@ -215,13 +215,15 @@ fn option_1() {
 
 fn option_2() {
     println!("Zeiten testen");
-    if let Err(e) = csv_tests("data/sudoku_test_set_9x9.txt") {
+    if let Err(e) = csv_tests("data/unbiased_sudokus_formated.txt", true) {
         eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
     }
 }
 
 fn option_3() {
-    println!("Neue Methode");
+    println!("Threads");
+    let mut s = Sudoku::new(9);
+    calculation::thread_calculation("data/permuted_solutions.txt", &mut s)
 }
 
 fn option_4() {
