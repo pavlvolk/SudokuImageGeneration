@@ -67,7 +67,15 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
 
                 let (unique, possible_sol) = Sudoku::unique(&mut sudoku, &grid_list, &mut solver);
                 if unique {
-
+                    let mut check_solver = Solver::new();
+                    let check_clauses = sudoku_clauses(sudoku.board_size);
+                    for clause in check_clauses{
+                        check_solver.add_clause(clause);
+                    }
+                    let (check_unique, _) = Sudoku::unique(&sudoku, &grid_list, &mut check_solver);
+                    if !check_unique{
+                        continue;
+                    }
                     let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku.board_size);
                     solution = permute_numbers(&solution, 9);
                     return Ok(Some(solution));
@@ -130,6 +138,15 @@ pub fn thread_calculation(path: &str, sudoku: &Sudoku) -> Option<Vec<i32>> {
 
                 let (unique, possible_sol) = Sudoku::unique(&mut sudoku_clone, &grid_list, &mut solver);
                 if unique{
+                    let mut check_solver = Solver::new();
+                    let check_clauses = sudoku_clauses(sudoku_clone.board_size);
+                    for clause in check_clauses{
+                        check_solver.add_clause(clause);
+                    }
+                    let (check_unique, _) = Sudoku::unique(&sudoku_clone, &grid_list, &mut check_solver);
+                    if !check_unique{
+                        continue;
+                    }
                     let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku_clone.board_size);
                     solution = permute_numbers(&solution, 9);
                     let _ = tx.send(solution);
