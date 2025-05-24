@@ -23,7 +23,7 @@ use crate::calculation::calculate_solution;
 use crate::sudoku::Sudoku;
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::io::{self, Write};
-
+use crate::apply_permutations::apply_reverse_permutations;
 
 fn main() {
     // Welcome Screen
@@ -221,9 +221,11 @@ fn option_2() {
 }
 
 fn option_3() {
+
     println!("Threads");
     let mut s = Sudoku::new(9);
     println!("{:?}", calculation::thread_calculation("data/permuted_solutions.txt", &mut s));
+
 }
 
 fn option_4() {
