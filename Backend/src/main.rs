@@ -223,7 +223,7 @@ fn option_2() {
 fn option_3() {
     println!("Threads");
     let mut s = Sudoku::new(9);
-    calculation::thread_calculation("data/permuted_solutions.txt", &mut s)
+    println!("{:?}", calculation::thread_calculation("data/permuted_solutions.txt", &mut s));
 }
 
 fn option_4() {

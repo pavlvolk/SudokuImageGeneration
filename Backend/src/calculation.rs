@@ -8,10 +8,7 @@ use crate::fill_grid::fill_grid;
 use crate::sudoku;
 use crate::sudoku::Sudoku;
 use crate::sudoku_clauses::sudoku_clauses;
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc,
-};
+use std::sync::{atomic::{AtomicBool, Ordering}, mpsc, Arc};
 
 /**
 *   This function takes hints and a sudoku of a specific size and outputs a solution if there is a definite one.
@@ -81,7 +78,8 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
     return Ok(None);
 }
 
-pub fn thread_calculation(path: &str, sudoku: &Sudoku) {
+pub fn thread_calculation(path: &str, sudoku: &Sudoku) -> Option<Vec<i32>> {
+    let (tx, rx) = mpsc::channel();
     let stop_flag = Arc::new(AtomicBool::new(false));
     let mut handles = vec![];
     let file = File::open(path).unwrap();
@@ -96,6 +94,7 @@ pub fn thread_calculation(path: &str, sudoku: &Sudoku) {
         i += 1;
     }
     for j in 0..8{
+        let tx = tx.clone();
         let stop_flag = Arc::clone(&stop_flag);
         let lines = results[j].clone();
         let mut sudoku_clone = sudoku.clone();
@@ -122,7 +121,7 @@ pub fn thread_calculation(path: &str, sudoku: &Sudoku) {
 
                 let (unique, possible_sol) = Sudoku::unique(&mut sudoku_clone, &grid_list, &mut solver);
                 if unique{
-                    println!("{:?}", Some(Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku_clone.board_size)));
+                    let _ = tx.send(Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku_clone.board_size));
                     stop_flag.store(true, Ordering::Relaxed);
                 }
             }
@@ -132,5 +131,8 @@ pub fn thread_calculation(path: &str, sudoku: &Sudoku) {
     for handle in handles {
         handle.join().unwrap();
     }
+
+    drop(tx);
+    rx.recv().ok()
 }
 
