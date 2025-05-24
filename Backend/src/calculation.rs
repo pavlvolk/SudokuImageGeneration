@@ -32,7 +32,7 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
                 let (unique, possible_sol) = Sudoku::unique(sudoku, &result, &mut solver);
                 if unique {
                     let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), sudoku.board_size);
-                    solution = permutateNumbers(&solution, 9);
+                    solution = permutateNumbers(&solution, sudoku.board_size);
                     return Ok(Some(solution));
                     //TODO Permutation rückwärts machen
                 }
