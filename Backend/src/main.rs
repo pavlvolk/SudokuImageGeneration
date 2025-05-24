@@ -207,15 +207,15 @@ fn option_1() {
         .into_iter()
         .map(|x| if x == 0 { 0 } else { 1 })
         .collect();
-    let t1: Vec<_> = h.into_iter().map(|x| if x == 0 { 0 } else { 1 }).collect();
+    //let t1: Vec<_> = h.into_iter().map(|x| if x == 0 { 0 } else { 1 }).collect();
     //println!("{:?}", calculate_solution(&hints, &mut s, true).unwrap());
-    //println!("{:?}", calculate_solution(&transformed, &mut s, false).unwrap());
-    println!("{:?}", calculate_solution(&t1, &mut s, false).unwrap());
+    println!("{:?}", calculate_solution(&transformed, &mut s, false).unwrap());
+    //println!("{:?}", calculate_solution(&t1, &mut s, false).unwrap());
 }
 
 fn option_2() {
     println!("Zeiten testen");
-    if let Err(e) = csv_tests("./sudoku_test_set_9x9.txt") {
+    if let Err(e) = csv_tests("C:/Users/Hanne/PycharmProjects/SATvsCSP/sudoku_test_set_9x9.txt") {
         eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
     }
 }
