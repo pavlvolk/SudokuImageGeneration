@@ -240,6 +240,7 @@
     const modeSelector = document.getElementById("modeSelector");
     const loader = document.getElementById("loader");
     const sudokuContainer = document.getElementById("sudokuContainer");
+    const serverUrl = "http://localhost:8080";
 
     function getBlockSize(size) {
         if (size === 4) return [2, 2];
@@ -402,30 +403,47 @@
         loader.style.display = "block";
         sudokuContainer.innerHTML = "";
         document.getElementById("downloadBtn").style.display = "none";
-
-        setTimeout(() => {
+        alert("before payload");
+        const payload = {
+                    data: gridState,
+                    length: currentSize * currentSize,
+                    markingmode: markMode,
+        };
+        alert("start fetch request");
+        fetch(`${serverUrl}/api/process-tuple`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(result => {
             loader.style.display = "none";
-
-            const errors = validTupel(tupel); // <-- HIER Errors holen
-
-            const errorDiv = document.getElementById("errorOutput"); // <-- HIER Fehler-Container holen
-
-
-            if (tupel.size === 9 && changes < 17) {
-                alert("markiere mehr als 17 Elemente");
-                errorDiv.innerHTML = "<strong>Fehler:</strong><br>" + errors.join("<br>"); // Fehler anzeigen
-                highlightErrors(errors,tupel);
+            if (result.hassolution === false) {
+                alert("Das markierte Sudoku ist ungültig!");
             } else {
-                if (errors.length === 0) {
-                    errorDiv.innerHTML = ""; // Keine Fehler, Div leeren
-                    renderSudokuPreview(tupel);
-                    showDownloadButton();
-                } else {
-                    errorDiv.innerHTML = "<strong>Fehler:</strong><br>" + errors.join("<br>"); // Fehler anzeigen
-                    highlightErrors(errors,tupel);
+                // Create a tupel object that matches what renderSudokuPreview expects
+                  const tupel = {
+                      size: currentSize,
+                      state: result.data,
+                      mode: markMode
+                  };
+                  renderSudokuPreview(tupel);
+                  showDownloadButton();
                 }
-            }
-        }, 1000);
+            })
+        .catch(error => {
+            loader.style.display = "none";
+            alert("Es ist ein Fehler aufgetreten: " + error.message);
+            console.error("Error:", error);
+        });
+
+            console.log("Sudoku-Tupel:", tupel);
+
+            loader.style.display = "block";
+            sudokuContainer.innerHTML = "";
+            document.getElementById("downloadBtn").style.display = "none";
     }
 
 
