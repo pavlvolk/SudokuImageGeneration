@@ -8,7 +8,7 @@ use std::thread;
 use std::time::Instant;
 use cadical::Solver;
 use crate::apply_permutations::{apply_permutations, apply_reverse_permutations};
-use crate::calculation::permutateNumbers;
+use crate::calculation::permute_numbers;
 use crate::fill_grid::fill_grid;
 use crate::sort::find_permutations;
 use crate::sudoku;
@@ -56,8 +56,8 @@ fn process_list(list: Vec<usize>) -> Result<Option<Vec<i32>>, Box<dyn Error> > {
         let (unique, possible_sol) = Sudoku::unique(&sudoku, &grid_list, &mut solver);
         if unique {
 
-            let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), sudoku.board_size);
-            solution = permutateNumbers(&solution, 9);
+            let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku.board_size);
+            solution = permute_numbers(&solution, 9);
             return Ok(Some(solution));
         }
         count += 1;
@@ -119,7 +119,9 @@ fn process_list_threads(list: Vec<usize>) -> Option<Vec<i32>> {
                 }
                 let (unique, possible_sol) = Sudoku::unique(&sudoku_clone, &grid_list, &mut solver);
                 if unique{
-                    let _ = tx.send(Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku_clone.board_size));
+                    let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku.board_size);
+                    solution = permute_numbers(&solution, 9);
+                    let _ = tx.send(solution);
                     stop_flag.store(true, Ordering::Relaxed);
                 }
             }

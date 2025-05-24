@@ -33,8 +33,8 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
                 println!("{}", i);
                 let (unique, possible_sol) = Sudoku::unique(sudoku, &result, &mut solver);
                 if unique {
-                    let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), sudoku.board_size);
-                    solution = permutateNumbers(&solution, sudoku.board_size);
+                    let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku.board_size);
+                    solution = permute_numbers(&solution, sudoku.board_size);
                     return Ok(Some(solution));
                     //TODO Permutation rückwärts machen
 
@@ -68,8 +68,8 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
                 let (unique, possible_sol) = Sudoku::unique(&mut sudoku, &grid_list, &mut solver);
                 if unique {
 
-                    let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), sudoku.board_size);
-                    solution = permutateNumbers(&solution, 9);
+                    let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku.board_size);
+                    solution = permute_numbers(&solution, 9);
                     return Ok(Some(solution));
 
                 }
@@ -130,7 +130,9 @@ pub fn thread_calculation(path: &str, sudoku: &Sudoku) -> Option<Vec<i32>> {
 
                 let (unique, possible_sol) = Sudoku::unique(&mut sudoku_clone, &grid_list, &mut solver);
                 if unique{
-                    let _ = tx.send(Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku_clone.board_size));
+                    let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku_clone.board_size);
+                    solution = permute_numbers(&solution, 9);
+                    let _ = tx.send(solution);
                     stop_flag.store(true, Ordering::Relaxed);
                 }
             }
@@ -149,7 +151,7 @@ pub fn thread_calculation(path: &str, sudoku: &Sudoku) -> Option<Vec<i32>> {
 /*
 Permutiert die Zahlen random
  */
-pub(crate) fn permutateNumbers(list: &Vec<i32>, size: i32) -> Vec<i32> {
+pub(crate) fn permute_numbers(list: &Vec<i32>, size: i32) -> Vec<i32> {
     use rand::seq::SliceRandom;
     use rand::thread_rng;
 
@@ -166,6 +168,5 @@ pub(crate) fn permutateNumbers(list: &Vec<i32>, size: i32) -> Vec<i32> {
     for i in 0..size_square as usize {
         result[i] = indices[list[i] as usize - 1] as i32;
     }
-
     result
 }
