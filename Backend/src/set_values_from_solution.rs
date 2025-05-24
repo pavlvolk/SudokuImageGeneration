@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 pub fn set_values_from_solution(grid: &[usize]) -> HashSet<Vec<usize>> {
-    let outcome = read_and_process_csv("permuted_solutions.txt", grid);
+    let outcome = read_and_process_csv("data/permuted_solutions.txt", grid);
     if let Err(e) = &outcome {
         eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
     }

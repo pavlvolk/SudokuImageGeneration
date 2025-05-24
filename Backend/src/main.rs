@@ -215,23 +215,16 @@ fn option_1() {
 
 fn option_2() {
     println!("Zeiten testen");
-    if let Err(e) = csv_tests("unbiased_sudokus_formated.txt") {
+    if let Err(e) = csv_tests("data/unbiased_sudokus_formated.txt", true) {
         eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
     }
 }
 
 fn option_3() {
-    println!("Neue Methode");
-    let transformed = [0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1];
 
-
-    let (row_permutation, col_permutation, mirror) = find_permutations(&transformed, &9);
-
-
-    let mut grid_permuted = apply_permutations(&transformed, &row_permutation, &col_permutation, &mirror, &9);
-
-    let mut new_grid_permuted = apply_reverse_permutations(&grid_permuted, &row_permutation, &col_permutation, &mirror, &9);
-
+    println!("Threads");
+    let mut s = Sudoku::new(9);
+    println!("{:?}", calculation::thread_calculation("data/permuted_solutions.txt", &mut s));
 
 }
 
