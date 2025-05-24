@@ -4,7 +4,10 @@ use std::io::{BufRead, BufReader};
 use std::error::Error;
 use std::time::Instant;
 use cadical::Solver;
+use crate::apply_permutations::{apply_permutations, apply_reverse_permutations};
+use crate::calculation::permutateNumbers;
 use crate::fill_grid::fill_grid;
+use crate::sort::find_permutations;
 use crate::sudoku;
 use crate::sudoku::Sudoku;
 use crate::sudoku_clauses::sudoku_clauses;
@@ -30,7 +33,7 @@ fn process_list(list: Vec<usize>) -> Result<Option<Vec<i32>>, Box<dyn Error> > {
 
 
     let mut count = 0;
-    let max_count = 100000;   //TODO in main übergeben
+    let max_count = 10000;   //TODO in main übergeben
     for line_result in reader.lines() {
         if count > max_count{
             break
@@ -50,7 +53,9 @@ fn process_list(list: Vec<usize>) -> Result<Option<Vec<i32>>, Box<dyn Error> > {
 
         let (unique, possible_sol) = Sudoku::unique(&mut sudoku, &grid_list, &mut solver);
         if unique {
-            return Ok(Some(Sudoku::to_list(&mut possible_sol.unwrap(), sudoku.board_size)));
+            let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), sudoku.board_size);
+            solution = permutateNumbers(&solution, 9);
+            return Ok(Some(solution));
         }
         count += 1;
 

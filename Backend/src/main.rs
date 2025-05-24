@@ -23,7 +23,7 @@ use crate::calculation::calculate_solution;
 use crate::sudoku::Sudoku;
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::io::{self, Write};
-
+use crate::apply_permutations::apply_reverse_permutations;
 
 fn main() {
     // Welcome Screen
@@ -215,13 +215,24 @@ fn option_1() {
 
 fn option_2() {
     println!("Zeiten testen");
-    if let Err(e) = csv_tests("C:/Users/Hanne/PycharmProjects/SATvsCSP/sudoku_test_set_9x9.txt") {
+    if let Err(e) = csv_tests("unbiased_sudokus_formated.txt") {
         eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
     }
 }
 
 fn option_3() {
     println!("Neue Methode");
+    let transformed = [0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1];
+
+
+    let (row_permutation, col_permutation, mirror) = find_permutations(&transformed, &9);
+
+
+    let mut grid_permuted = apply_permutations(&transformed, &row_permutation, &col_permutation, &mirror, &9);
+
+    let mut new_grid_permuted = apply_reverse_permutations(&grid_permuted, &row_permutation, &col_permutation, &mirror, &9);
+
+
 }
 
 fn option_4() {
