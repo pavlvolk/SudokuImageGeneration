@@ -67,7 +67,13 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
         return HttpResponse::Ok().json(output);
     }
     else{
-        output.data = result.unwrap();
+        let mut outputdata = result.unwrap();
+        for i in 0..input.length {
+            if input.data[i] == 0 {
+                outputdata[i] = 0;
+            }
+        }
+        output.data = outputdata;
         output.hassolution = true;
         return HttpResponse::Ok().json(output);
     }

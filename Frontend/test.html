@@ -304,7 +304,7 @@
                   const tupel = {
                       size: currentSize,
                       state: result.data,
-                      mode: currentMode
+                      mode: 'input'
                   };
                   renderSudokuPreview(tupel);
                   showDownloadButton();
@@ -449,11 +449,11 @@
                 if (row === tupel.size - 1) cell.classList.add("thick-bottom");
 
                 const value = tupel.state[index];
-
-                if (tupel.mode === "mark") {
-                    if (value === 1) cell.classList.add("marked");
-                } else if (!isNaN(value) && value !== 0) {
+                if (value != 0) {
                     cell.textContent = value;
+                }
+                else {
+                    cell.textContent = 12;
                 }
 
                 container.appendChild(cell);
