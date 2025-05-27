@@ -2,6 +2,7 @@ use cadical::Solver;
 use sudoku_clauses::add_hint;
 use crate::sudoku_clauses;
 
+#[derive(Clone)]
 pub struct Sudoku{
     pub(crate) board_size: i32,
     standard_clauses:Vec<Vec<i32>>
@@ -12,6 +13,7 @@ impl Sudoku {
     /**
     *   This method creates another sudoku with the standard restrictions.
     *   You can reuse this sudoku template with different hints since they will not be added.
+    *
     *   @returns Sudoku The created sudoku.
     */
     pub fn new(board_size: i32) -> Sudoku {
@@ -25,11 +27,12 @@ impl Sudoku {
 
     /**
     *   This method calculates whether the sudoku is unique or not given the hints.
-    *   @returns bool The boolean if the sudoku is unique.
+    *
+    *   @returns (bool, Option<Vec >) Boolean if it is unique and possible solution. 
     */
 
-    pub fn unique(&mut self, hints: &Vec<usize>, solver: &mut Solver) -> (bool, Option<Vec<i32>>){
-        let (solvable, possible_sol) = Self::solvable(self, &hints, solver);
+    pub fn unique(&self, hints: &Vec<usize>, solver: &mut Solver) -> (bool, Option<Vec<i32>>){
+        let (solvable, possible_sol) = Self::solvable(&self, &hints, solver);
         if solvable {
             let solution = possible_sol.unwrap();
             let mut forbidden:Vec<i32> = Vec::new();
@@ -46,11 +49,12 @@ impl Sudoku {
 
     /**
     *   This method calculates whether the sudoku is solvable given the hints and optionally the solution if it's available.
+    *
     *   @returns (bool, Option<Vec<i32>>) Boolean if it is solvable and possible solution.
     */
 
-    pub fn solvable(&mut self, hints: &Vec<usize>, solver: &mut Solver) -> (bool, Option<Vec<i32>>){
-        let hint_iterator = Self::add_hints(self, &hints).into_iter();
+    pub fn solvable(&self, hints: &Vec<usize>, solver: &mut Solver) -> (bool, Option<Vec<i32>>){
+        let hint_iterator = Self::add_hints(&self, &hints).into_iter();
         let solvable = solver.solve_with(hint_iterator).unwrap();
         if solvable{
             let mut solution = Vec::new();
@@ -59,7 +63,6 @@ impl Sudoku {
                     solution.push(var)
                 }
             }
-            println!("{:?}", Self::to_list(&mut solution, 9));
             return (solvable, Some(solution))
         }
         (solvable, None)
@@ -91,7 +94,7 @@ impl Sudoku {
         res
     }
 
-    pub fn to_list(vec: &mut Vec<i32>, board_size: i32) ->Vec<i32> {
+    pub fn to_list(vec: &mut Vec<i32>, board_size: &i32) ->Vec<i32> {
         let mut res: Vec<i32> = vec![0; (board_size*board_size) as usize];
         for i in 0..vec.len() {
             let var0 = vec[i]-1;
@@ -102,6 +105,7 @@ impl Sudoku {
         }
         res
     }
+
 }
 
 

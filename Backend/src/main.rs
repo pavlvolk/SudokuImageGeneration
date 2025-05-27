@@ -24,6 +24,9 @@ use crate::sudoku::Sudoku;
 use actix_cors::Cors;
 use actix_web::{post, web, App, HttpServer, HttpResponse};
 use serde::{Deserialize, Serialize};
+use dialoguer::{theme::ColorfulTheme, Select};
+use std::io::{self, Write};
+use crate::apply_permutations::apply_reverse_permutations;
 
 //Input structure
 #[derive(Deserialize)]
@@ -40,6 +43,86 @@ struct Output {
     hassolution: bool ,
 }
 
+#[actix_web::main]
+async fn main() {
+    // Welcome Screen
+    println!("===============================");
+    println!(" Willkommen zum Rust CLI Tool ");
+    println!("===============================");
+    println!("Bitte wählen Sie eine Option aus:");
+    println!();
+
+    // Optionen anzeigen
+    let options = vec![
+        "Option 1: Beispielsudokus berechnen",
+        "Option 2: Zeiten testen",
+        "Option 3: Neue Methode",
+        "Option 4: Programm beenden",
+        "Option 5: Start Server",       
+    ];
+
+    let selection = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Was möchten Sie tun?")
+        .items(&options)
+        .default(0)
+        .interact()
+        .unwrap();
+
+    match selection {
+        0 => option_1(),
+        1 => option_2(),
+        2 => option_3(),
+        3 => option_4(),
+        4 => option_5().await.unwrap(),
+        _ => println!("Ungültige Auswahl."),
+    }
+}
+fn option_1() {
+    let h = vec![
+        0, 0, 0, 0, 0, 0, 0, 1, 0,
+        4, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 2, 0, 0, 0, 0, 0, 0, 0,
+
+        0, 0, 0, 0, 5, 0, 4, 0, 7,
+        0, 0, 8, 0, 0, 0, 3, 0, 0,
+        0, 0, 1, 0, 9, 0, 0, 0, 0,
+
+        3, 0, 0, 4, 0, 0, 2, 0, 0,
+        0, 5, 0, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 8, 0, 6, 0, 0, 0,
+    ];
+
+    let hints:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
+    let mut s = Sudoku::new(9);
+    let hints1:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
+    let transformed: Vec<usize> = hints1
+        .into_iter()
+        .map(|x| if x == 0 { 0 } else { 1 })
+        .collect();
+    //let t1: Vec<_> = h.into_iter().map(|x| if x == 0 { 0 } else { 1 }).collect();
+    //println!("{:?}", calculate_solution(&hints, &mut s, true).unwrap());
+    println!("{:?}", calculate_solution(&transformed, &mut s, false).unwrap());
+    //println!("{:?}", calculate_solution(&t1, &mut s, false).unwrap());
+}
+
+fn option_2() {
+    println!("Zeiten testen");
+    if let Err(e) = csv_tests("data/unbiased_sudokus_formated.txt", true) {
+        eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
+    }
+}
+
+fn option_3() {
+
+    println!("Threads");
+    let mut s = Sudoku::new(9);
+    println!("{:?}", calculation::thread_calculation("data/permuted_solutions.txt", &mut s));
+
+}
+
+fn option_4() {
+    println!("👋 Programm wird beendet. Auf Wiedersehen!");
+}
 
 #[post("/api/process-tuple")]
 async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
@@ -63,11 +146,11 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
     else{
         return HttpResponse::BadRequest().json("Wrong Dimension");
     }
-    if result.is_none() {
+    if result.as_ref().unwrap().is_none() {
         return HttpResponse::Ok().json(output);
     }
     else{
-        let mut outputdata = result.unwrap();
+        let mut outputdata = result.unwrap().unwrap();
         for i in 0..input.length {
             if input.data[i] == 0 {
                 outputdata[i] = 0;
@@ -79,8 +162,7 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
     }
 }
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn option_5() -> std::io::Result<()> {
     println!("81D Tuple processor running at http://localhost:8080");
 
     HttpServer::new(|| {
@@ -90,5 +172,6 @@ async fn main() -> std::io::Result<()> {
     })
         .bind("127.0.0.1:8080")?
         .run()
-        .await
+        .await?;
+    Ok(())
 }
