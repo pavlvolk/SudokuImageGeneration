@@ -42,7 +42,7 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
                 i += 1;
             }
         }else if sudoku.board_size == 9 {
-            let file = File::open("data/permuted_solutions.txt")?;
+            let file = File::open("data/solution_9.txt")?;
             let reader = BufReader::new(file);
 
 
