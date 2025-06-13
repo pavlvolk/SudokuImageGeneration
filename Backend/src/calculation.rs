@@ -9,6 +9,8 @@ use crate::sudoku;
 use crate::sudoku::Sudoku;
 use crate::sudoku_clauses::sudoku_clauses;
 use std::sync::{atomic::{AtomicBool, Ordering}, mpsc, Arc};
+use crate::constants::SOLUTION;
+use crate::constants::TEST;
 
 /**
 *   This function takes hints and a sudoku of a specific size and outputs a solution if there is a definite one.
@@ -42,7 +44,7 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
                 i += 1;
             }
         }else if sudoku.board_size == 9 {
-            let file = File::open("data/permuted_solutions.txt")?;
+            let file = File::open(SOLUTION)?;
             let reader = BufReader::new(file);
 
 

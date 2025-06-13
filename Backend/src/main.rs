@@ -8,6 +8,8 @@ mod sudoku_clauses;
 mod set_values_from_solution;
 mod testen_Wahrscheinlichkeit;
 mod calculation;
+
+mod constants;
 // Added to ensure the module is included
 
 use std::time::Instant;
@@ -27,6 +29,8 @@ use serde::{Deserialize, Serialize};
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::io::{self, Write};
 use crate::apply_permutations::apply_reverse_permutations;
+use crate::constants::SOLUTION;
+use crate::constants::TEST;
 
 //Input structure
 #[derive(Deserialize)]
@@ -109,7 +113,7 @@ fn option_1() {
 
 fn option_2() {
     println!("Zeiten testen");
-    if let Err(e) = csv_tests("data/sudoku_test_set_9x9.txt", false) {
+    if let Err(e) = csv_tests(TEST, true) {
         eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
     }
 }
@@ -141,7 +145,7 @@ fn option_3() {
     let count_ones = transformed.iter().filter(|&&x| x != 0).count();
     println!("Anzahl der 1s: {}", count_ones);
     let mut s = Sudoku::new(9);
-    println!("{:?}", calculation::thread_calculation(&transformed, "data/permuted_solutions.txt", &mut s));
+    println!("{:?}", calculation::thread_calculation(&transformed, SOLUTION, &mut s));
 
 }
 

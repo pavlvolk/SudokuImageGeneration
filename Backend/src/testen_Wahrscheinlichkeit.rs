@@ -14,6 +14,10 @@ use crate::sort::find_permutations;
 use crate::sudoku;
 use crate::sudoku::Sudoku;
 use crate::sudoku_clauses::sudoku_clauses;
+use crate::constants::SOLUTION;
+use crate::constants::TEST;
+use crate::constants::NUMBER_OF_THREADS;
+use crate::constants::SOLUTION_PER_THREAD;
 
 fn process_list(list: Vec<usize>) -> Result<Option<Vec<i32>>, Box<dyn Error> > {
     let mut solver = Solver::new();
@@ -30,7 +34,7 @@ fn process_list(list: Vec<usize>) -> Result<Option<Vec<i32>>, Box<dyn Error> > {
     let count_ones = transformed.iter().filter(|&&x| x == 1).count();
     println!("Anzahl der 1s: {}", count_ones);
 
-    let file = File::open("data/permuted_solutions.txt")?;
+    let file = File::open(SOLUTION)?;
     let reader = BufReader::new(file);
 
 
@@ -77,21 +81,21 @@ fn process_list_threads(list: Vec<usize>) -> Option<Vec<i32>> {
     let stop_flag = Arc::new(AtomicBool::new(false));
     let (tx, rx) = mpsc::channel();
     let mut handles = vec![];
-    let file = File::open("data/permuted_solutions.txt").unwrap();
+    let file = File::open(SOLUTION).unwrap();
     let reader = BufReader::new(file);
     let mut results = Vec::new();
-    for _ in 0..16{
+    for _ in 0..NUMBER_OF_THREADS{
         results.push(Vec::new());
     }
     let mut i = 0;
     for line in reader.lines() {
-        if i > 160000{
+        if i > NUMBER_OF_THREADS * SOLUTION_PER_THREAD {
             break;
         }
-        results[i%8].push(line.unwrap());
+        results[i%NUMBER_OF_THREADS].push(line.unwrap());
         i += 1;
     }
-    for j in 0..16{
+    for j in 0..NUMBER_OF_THREADS{
         let transformed_clone: Vec<usize> = transformed.clone();
         let tx = tx.clone();
         let stop_flag = Arc::clone(&stop_flag);
