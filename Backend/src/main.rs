@@ -79,7 +79,7 @@ async fn main() {
 }
 fn option_1() {
     let h = vec![
-        0, 0, 0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
         4, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 2, 0, 0, 0, 0, 0, 0, 0,
 
@@ -95,10 +95,12 @@ fn option_1() {
     let hints:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
     let mut s = Sudoku::new(9);
     let hints1:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
-    let transformed: Vec<usize> = hints1
+    let transformed: Vec<usize> = h
         .into_iter()
         .map(|x| if x == 0 { 0 } else { 1 })
         .collect();
+    let count_ones = transformed.iter().filter(|&&x| x != 0).count();
+    println!("Anzahl der 1s: {}", count_ones);
     //let t1: Vec<_> = h.into_iter().map(|x| if x == 0 { 0 } else { 1 }).collect();
     //println!("{:?}", calculate_solution(&hints, &mut s, true).unwrap());
     println!("{:?}", calculate_solution(&transformed, &mut s, false).unwrap());
@@ -107,7 +109,7 @@ fn option_1() {
 
 fn option_2() {
     println!("Zeiten testen");
-    if let Err(e) = csv_tests("data/unbiased_sudokus_formated.txt", true) {
+    if let Err(e) = csv_tests("data/sudoku_test_set_9x9.txt", false) {
         eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
     }
 }
@@ -115,8 +117,31 @@ fn option_2() {
 fn option_3() {
 
     println!("Threads");
+    let h = vec![
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        4, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 2, 0, 0, 0, 0, 0, 0, 0,
+
+        0, 0, 0, 0, 5, 0, 4, 0, 7,
+        0, 0, 8, 0, 0, 0, 3, 0, 0,
+        0, 0, 1, 0, 9, 0, 0, 0, 0,
+
+        3, 0, 0, 4, 0, 0, 2, 0, 0,
+        0, 5, 0, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 8, 0, 6, 0, 0, 0,
+    ];
+
+    let hints:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
     let mut s = Sudoku::new(9);
-    println!("{:?}", calculation::thread_calculation("data/permuted_solutions.txt", &mut s));
+    let hints1:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
+    let transformed: Vec<usize> = h
+        .into_iter()
+        .map(|x| if x == 0 { 0 } else { 1 })
+        .collect();
+    let count_ones = transformed.iter().filter(|&&x| x != 0).count();
+    println!("Anzahl der 1s: {}", count_ones);
+    let mut s = Sudoku::new(9);
+    println!("{:?}", calculation::thread_calculation(&transformed, "data/permuted_solutions.txt", &mut s));
 
 }
 

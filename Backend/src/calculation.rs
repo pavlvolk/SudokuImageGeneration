@@ -42,26 +42,26 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
                 i += 1;
             }
         }else if sudoku.board_size == 9 {
-            let file = File::open("data/solution_9.txt")?;
+            let file = File::open("data/permuted_solutions.txt")?;
             let reader = BufReader::new(file);
 
 
             let mut count = 0;
-            let max_count = 100000;   //TODO in main übergeben
+            let max_count = 10000;   //TODO in main übergeben
             for line_result in reader.lines() {
                 if count > max_count{
                     break
                 }
                 let line = line_result?;
                 let cleaned_line = line.trim().trim_start_matches('[').trim_end_matches(']');
-                let list: Vec<usize> = cleaned_line
+                let transformed: Vec<usize> = cleaned_line
                     .split(',')
                     .map(|s| s.trim().parse::<usize>())
                     .collect::<Result<Vec<_>, _>>()?;
 
                 let mut grid_list = Vec::new();
                 for i in  0..81{
-                    grid_list.push(list[i]);
+                    grid_list.push(list[i]*transformed[i]);
                 }
 
 
@@ -95,7 +95,7 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
 }
 
 
-pub fn thread_calculation(path: &str, sudoku: &Sudoku) -> Option<Vec<i32>> {
+pub fn thread_calculation(list: &Vec<usize>, path: &str, sudoku: &Sudoku) -> Option<Vec<i32>> {
     let (tx, rx) = mpsc::channel();
     let stop_flag = Arc::new(AtomicBool::new(false));
     let mut handles = vec![];
@@ -111,6 +111,7 @@ pub fn thread_calculation(path: &str, sudoku: &Sudoku) -> Option<Vec<i32>> {
         i += 1;
     }
     for j in 0..8{
+        let thread_list = list.clone();
         let tx = tx.clone();
         let stop_flag = Arc::clone(&stop_flag);
         let lines = results[j].clone();
@@ -126,14 +127,14 @@ pub fn thread_calculation(path: &str, sudoku: &Sudoku) -> Option<Vec<i32>> {
                     return
                 }
                 let cleaned_line = line.trim().trim_start_matches('[').trim_end_matches(']');
-                let list: Vec<usize> = cleaned_line
+                let transformed: Vec<usize> = cleaned_line
                     .split(',')
                     .map(|s| s.trim().parse::<usize>())
                     .collect::<Result<Vec<_>, _>>().unwrap();
 
                 let mut grid_list = Vec::new();
                 for i in  0..81{
-                    grid_list.push(list[i]);
+                    grid_list.push(thread_list[i]*transformed[i]);
                 }
 
                 let (unique, possible_sol) = Sudoku::unique(&mut sudoku_clone, &grid_list, &mut solver);
@@ -175,7 +176,7 @@ pub(crate) fn permute_numbers(list: &Vec<i32>, size: i32) -> Vec<i32> {
     let mut rng = thread_rng();
 
     // Erzeuge Zahlen von 0 bis size-1
-    let mut indices: Vec<usize> = (0..size as usize).collect();
+    let mut indices: Vec<usize> = (1..(size+1) as usize).collect();
 
     // Mische die Indizes zufällig
     indices.shuffle(&mut rng);
