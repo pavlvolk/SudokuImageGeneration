@@ -2,9 +2,11 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use crate::constants::SOLUTION;
+use crate::constants::TEST;
 
 pub fn set_values_from_solution(grid: &[usize]) -> HashSet<Vec<usize>> {
-    let outcome = read_and_process_csv("data/permuted_solutions.txt", grid);
+    let outcome = read_and_process_csv(SOLUTION, grid);
     if let Err(e) = &outcome {
         eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
     }
