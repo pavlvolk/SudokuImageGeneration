@@ -8,6 +8,7 @@ mod sudoku_clauses;
 mod set_values_from_solution;
 mod testen_Wahrscheinlichkeit;
 mod calculation;
+mod difficulty;
 // Added to ensure the module is included
 
 use std::time::Instant;
@@ -58,7 +59,8 @@ async fn main() {
         "Option 2: Zeiten testen",
         "Option 3: Neue Methode",
         "Option 4: Programm beenden",
-        "Option 5: Start Server",       
+        "Option 5: Start Server",   
+        "Option 6: Difficulty",
     ];
 
     let selection = Select::with_theme(&ColorfulTheme::default())
@@ -74,6 +76,7 @@ async fn main() {
         2 => option_3(),
         3 => option_4(),
         4 => option_5().await.unwrap(),
+        5 => option_6(),
         _ => println!("Ungültige Auswahl."),
     }
 }
@@ -199,4 +202,35 @@ async fn option_5() -> std::io::Result<()> {
         .run()
         .await?;
     Ok(())
+}
+
+fn option_6(){
+    println!("Difficulty");
+    let vec_4x4: Vec<Vec<i32>> = vec![
+        vec![1, 2, 3, 4],
+        vec![5, 6, 7, 8],
+        vec![9, 10, 11, 12],
+        vec![13, 14, 15, 16],
+    ];
+
+    let array_6x6: [[i32; 6]; 6] = [
+        [1, 2, 3, 4, 5, 6],
+        [7, 8, 9, 10, 11, 12],
+        [13, 14, 15, 16, 17, 18],
+        [19, 20, 21, 22, 23, 24],
+        [25, 26, 27, 28, 29, 30],
+        [31, 32, 33, 34, 35, 36],
+    ];
+    let array_9x9: [[i32; 9]; 9] = [
+        [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        [10, 11, 12, 13, 14, 15, 16, 17, 18],
+        [19, 20, 21, 22, 23, 24, 25, 26, 27],
+        [28, 29, 30, 31, 32, 33, 34, 35, 36],
+        [37, 38, 39, 40, 41, 42, 43, 44, 45],
+        [46, 47, 48, 49, 50, 51, 52, 53, 54],
+        [55, 56, 57, 58, 59, 60, 61, 62, 63],
+        [64, 65, 66, 67, 68, 69, 70, 71, 72],
+        [73, 74, 75, 76, 77, 78, 79, 80, 81],
+    ];
+    println!("{:?}", difficulty::get_all_units(6));
 }
