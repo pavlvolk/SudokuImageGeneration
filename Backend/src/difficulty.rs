@@ -101,3 +101,13 @@ fn hidden_single(candidates: &HashMap<(i32, i32), Vec<i32>>, board_size: i32, li
     }
     false
 }
+
+fn naked_single(candidates: &HashMap<(i32, i32), Vec<i32>>, list: &mut Vec<Vec<i32>>) -> bool {
+    for ((r, c), val) in candidates{
+        if val.len() == 1{
+            list[*r as usize][*c as usize] = val[0];
+            return true;
+        }
+    }
+    false
+}
