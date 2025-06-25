@@ -277,7 +277,7 @@
                         });
                         const val = e.target.value.replace(/[^1-9]/g, '').slice(0, 1);
                         e.target.value = val;
-                        gridState[index] = val || 0;
+                        gridState[index] = val ? parseInt(val, 10) : 0;  // ← Convert to number
                         if (val){
                             changes ++
                         }else{
