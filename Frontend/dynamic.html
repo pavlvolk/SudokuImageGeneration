@@ -214,13 +214,24 @@
     <button onclick="resetGrid()">Zurücksetzen</button>
 </div>
 
+<svg xmlns="http://www.w3.org/2000/svg" width="450" height="450" viewBox="0 0 450 450" id="partialSvg" style="display:none;">
+    <style>
+        text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }    </style>
+    <rect width="450" height="450" fill="white" />
+</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="450" height="450" viewBox="0 0 450 450" id="fullSvg" style="display:none;">
+    <style>
+        text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }    </style>
+    <rect width="450" height="450" fill="white" />
+</svg>
+
 <div id="loader">⏳ Lade Sudokus...</div>
 
 <div id="sudokuContainer"></div>
 <div id="filledContainer" class = "grid"></div>
 <div class="button-group">
-    <button id="downloadBtn" onclick="downloadSudokus()" style="display:none; margin-top: 1rem;">download partial Sudoku</button>
-    <button id="download filled sudoku" onclick="downloadFilledSudoku()" style="display:none; margin-top: 1rem;">download filled Sudoku</button>
+    <button id="downloadBtn" onclick="downloadSudoku(partialSvg)" style="display:none; margin-top: 1rem;">download partial Sudoku</button>
+    <button id="download filled sudoku" onclick="downloadSudoku(fullSvg)" style="display:none; margin-top: 1rem;">download filled Sudoku</button>
 </div>
 <!--
 <h2>Aktueller Zustand (gridState als 1D-Liste)</h2>
@@ -247,6 +258,9 @@
     </div>
 </div>
 
+
+
+
 <script>
     let changes = 0;
     let currentSize = 9;
@@ -262,7 +276,8 @@
     const serverUrl = "http://localhost:8080";
     const { jsPDF } = window.jspdf;
     const { svg2pdf } = window.svg2pdf;
-    const svg = document.getElementById('sudokuSvg');
+    const partialSvg = document.getElementById('partialSvg');
+    const fullSvg = document.getElementById('fullSvg');
 
     function getBlockSize(size) {
         if (size === 4) return [2, 2];
@@ -487,13 +502,9 @@
             if (result.hassolution === false) {
                 alert("Das markierte Sudoku ist ungültig!");
             } else {
-                // Create a tupel object that matches what renderSudokuPreview expects
-                  const tupel = {
-                      size: currentSize,
-                      state: result.data,
-                      mode: markMode
-                  };
-                  renderSudokuPreview(tupel);
+                  renderSudoku(result.data, result.solution, partialSvg);
+                  renderSudoku(result.data, result.solution, fullSvg);
+                  partialSvg.style.display = "block";
                   showDownloadButton();
                 }
             })
@@ -740,108 +751,100 @@
         });
     }
 
-//ich weiß nicht genau wie das jetzt funktioniert mit backend und frontend verknüpfung. Das müsste dann bei Zeile 676/677 passieren was genau soll ich da machen?
-    //  das mit dem Sudokuauf grid geht easy ich weiß aber noch nicht genau was ich bei backend nekomme deswegen hab ichs mal nch nicht gemacht.
-    function renderSudokuPreview(tupel) {
-        const container = document.createElement("div");
-        container.className = "grid";
-        container.style.gridTemplateColumns = `repeat(${tupel.size}, 50px)`;
+    /*Zeichnet das partielle Sudoku als Vektorgraphik
+    macht die markierten Felder grau
+    unterscheidet zwischen voll und partiell
+    Aktuell noch nur auf 9*9
+     */
+    function renderSudoku(data, solution, svg) {
+        while (svg.childNodes.length > 1) {
+            svg.removeChild(svg.lastChild);
+        }
 
-        const [blockRows, blockCols] = getBlockSize(tupel.size);
+        for(let row=0; row<9; row++) {
+            for(let col=0; col<9; col++) {
+                let x = col*50;
+                let y = row*50;
+                let index = row* 9 + col; //TODO algemein machen
 
-        for (let row = 0; row < tupel.size; row++) {
-            for (let col = 0; col < tupel.size; col++) {
-                const index = row * tupel.size + col;
-                const cell = document.createElement("div");
-                cell.classList.add("cell");
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rect.setAttribute("x", x);
+                rect.setAttribute("y", y);
+                rect.setAttribute("width", 50);
+                rect.setAttribute("height", 50);
+                rect.setAttribute("class", "cell");
+                rect.setAttribute("fill", "white");
+                rect.setAttribute("stroke", "black");
+                rect.setAttribute("stroke-width", "1");
 
-                if (row % blockRows === 0) cell.classList.add("thick-top");
-                if (col % blockCols === 0) cell.classList.add("thick-left");
-                if (col === tupel.size - 1) cell.classList.add("thick-right");
-                if (row === tupel.size - 1) cell.classList.add("thick-bottom");
+                if(data[index] !== 0){
+                    rect.setAttribute("fill", "lightgrey");
+                }
+                svg.appendChild(rect);
 
-                const value = tupel.state[index];
 
-                if (value !== 0) {
-                    cell.textContent = value;
+                if(data[index] !== 0 || svg === fullSvg){
+                    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
 
-                    cell.classList.add("ausgabe")
+                    text.setAttribute("x", x + 25);
+                    text.setAttribute("y", y + 38);
+                    text.setAttribute("font-size", "40px");
+                    text.setAttribute("text-anchor", "middle");
+                    text.textContent = solution[index];
+                    text.setAttribute("fill", "black");
+                    svg.appendChild(text);
+
 
                 }
-                else{
-                    cell.textContent = "";
-                }
-
-                container.appendChild(cell);
             }
         }
 
-        sudokuContainer.appendChild(container);
+        const lines = [
+            {x1:0,y1:150,x2:450,y2:150},
+            {x1:0,y1:300,x2:450,y2:300},
+            {x1:150,y1:0,x2:150,y2:450},
+            {x1:300,y1:0,x2:300,y2:450},
+        ];
+        lines.forEach(lineData => {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", lineData.x1);
+            line.setAttribute("y1", lineData.y1);
+            line.setAttribute("x2", lineData.x2);
+            line.setAttribute("y2", lineData.y2);
+            line.setAttribute("stroke", "black");
+            line.setAttribute("stroke-width", "3");   // dickere Linien für Unterquadrate
+            svg.appendChild(line);
+        });
+
+        const border = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        border.setAttribute("x", 0);
+        border.setAttribute("y", 0);
+        border.setAttribute("width", 450);
+        border.setAttribute("height", 450);
+        border.setAttribute("fill", "none");
+        border.setAttribute("stroke", "black");
+        border.setAttribute("stroke-width", 8);   // noch dickerer Rahmen außen
+        svg.appendChild(border);
     }
 
-    function filledSudoku(tupel , state){
-        const container = document.createElement("div");
-        container.className = "grid";
-        container.style.gridTemplateColumns = `repeat(${tupel.size}, 50px)`;
-        document.getElementById("filledContainer").style.display = "none";
+    /*
+    Funktion um das PDF zu downloaden
+    Mit svg kann man angeben ob das volle oder nur das partielle
+     */
+    async function downloadSudoku(svg) {
+        const pdf = new jsPDF({ unit: 'pt', format: [450, 450] });
 
-        const [blockRows, blockCols] = getBlockSize(tupel.size);
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, 0, 450, 450, 'F');
 
-        for (let row = 0; row < tupel.size; row++) {
-            for (let col = 0; col < tupel.size; col++) {
-                const index = row * tupel.size + col;
-                const cell = document.createElement("div");
-                cell.classList.add("cell");
-
-                if (row % blockRows === 0) cell.classList.add("thick-top");
-                if (col % blockCols === 0) cell.classList.add("thick-left");
-                if (col === tupel.size - 1) cell.classList.add("thick-right");
-                if (row === tupel.size - 1) cell.classList.add("thick-bottom");
-
-                cell.textContent = state[index];
-                container.appendChild(cell);
-            }
+        svg.style.display = "block";
+        await svg2pdf(svg, pdf, { x: 0, y: 0, scale: 1 });
+        if(svg === fullSvg){
+            svg.style.display = "none";
+            pdf.save("solution.pdf");
+            return;
         }
-
-        filledContainer.appendChild(container);
-    }
-
-    async function downloadFilledSudoku(){
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        const container = document.getElementById("filledContainer");
-
-        await html2canvas(container).then((canvas) => {
-            const imgData = canvas.toDataURL("image/png");
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const imgProps = doc.getImageProperties(imgData);
-            const ratio = imgProps.width / imgProps.height;
-            const imgWidth = pageWidth - 20;
-            const imgHeight = imgWidth / ratio;
-
-            doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-            doc.save("sudokus.pdf");
-        });
-    }
-
-    async function downloadSudokus() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        const container = document.getElementById("sudokuContainer");
-
-        await html2canvas(container).then((canvas) => {
-            const imgData = canvas.toDataURL("image/png");
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const imgProps = doc.getImageProperties(imgData);
-            const ratio = imgProps.width / imgProps.height;
-            const imgWidth = pageWidth - 20;
-            const imgHeight = imgWidth / ratio;
-
-            doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-            doc.save("sudokus.pdf");
-        });
+        pdf.save("sudoku.pdf");
     }
 
     createGrid(currentSize);
