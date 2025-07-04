@@ -55,11 +55,10 @@ fn process_list_threads(transformed: Vec<usize>, solution: &str) -> Option<Vec<i
                 if stop_flag.load(Ordering::Relaxed) {
                     return
                 }
-                let cleaned_line = line.trim().trim_start_matches('[').trim_end_matches(']');
-                let list: Vec<usize> = cleaned_line
-                    .split(',')
-                    .map(|s| s.trim().parse::<usize>())
-                    .collect::<Result<Vec<_>, _>>().unwrap();
+                let list: Vec<usize> = line
+                    .chars()
+                    .map(|c| c.to_digit(10).expect("Ungültige Ziffer") as usize)
+                    .collect();
 
                 let mut grid_list = Vec::new();
                 for i in  0..81{

@@ -44,7 +44,7 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
                 i += 1;
             }
         }else if sudoku.board_size == 9 {
-            
+
             /*
             let file = File::open(SOLUTION)?;
             let reader = BufReader::new(file);
@@ -88,9 +88,9 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
                 count += 1;
 
             }
-            
+
              */
-            
+
             return Ok(thread_calculation(list));
         }
     } else {
@@ -138,11 +138,10 @@ pub fn thread_calculation(list: &Vec<usize>) -> Option<Vec<i32>> {
                 if stop_flag.load(Ordering::Relaxed) {
                     return
                 }
-                let cleaned_line = line.trim().trim_start_matches('[').trim_end_matches(']');
-                let transformed: Vec<usize> = cleaned_line
-                    .split(',')
-                    .map(|s| s.trim().parse::<usize>())
-                    .collect::<Result<Vec<_>, _>>().unwrap();
+                let transformed: Vec<usize> = line
+                    .chars()
+                    .map(|c| c.to_digit(10).expect("Ungültige Ziffer") as usize)
+                    .collect();
 
                 let mut grid_list = Vec::new();
                 for i in  0..81{
