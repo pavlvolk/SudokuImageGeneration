@@ -48,6 +48,7 @@ struct Input {
 #[derive(Serialize)]
 struct Output {
     data: Vec<i32>,
+    solution: Vec<i32>,
     hassolution: bool ,
 }
 
@@ -166,6 +167,7 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
     let result;
     let mut output = Output {
         data: vec![0; 81],
+        solution: vec![0; 81],       
         hassolution: false,
     };
     if input.length == 81 {
@@ -187,6 +189,7 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
     }
     else{
         let mut outputdata = result.unwrap().unwrap();
+        let solution = outputdata.clone();
         for i in 0..input.length {
             if input.data[i] == 0 {
                 outputdata[i] = 0;
@@ -194,6 +197,7 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
         }
         output.data = outputdata;
         output.hassolution = true;
+        output.solution = solution;
         return HttpResponse::Ok().json(output);
     }
 }

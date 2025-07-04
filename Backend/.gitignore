@@ -1,3 +1,7 @@
-/target/
-/.idea/
-/.data/
+*
+!/src/
+!/src/**
+!/data/
+!Cargo.lock
+!Cargo.toml
+!.gitignore
