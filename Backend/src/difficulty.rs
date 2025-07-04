@@ -1,20 +1,22 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 fn rate_difficulty(list: &Vec<i32>, size: i32) -> f32{
     return 0.0
 }
 
-fn serate(list: &Vec<Vec<i32>>) -> f64{
-    let board_size = list.len().isqrt();
-    let hidden_single = 1.2;
-    let naked_single = 2.3;
-    let pointing = 2.6;
-    let claiming = 2.8;
-    let x_wing = 4.0;
-    let swordfish = 5.0;
-
-
-
+pub fn serate(list: &mut Vec<Vec<i32>>) -> f64{
+    let board_size = list.len();
+    let hidden_single_d = 1.2;
+    let naked_single_d = 2.3;
+    let pointing_d = 2.6;
+    let claiming_d = 2.8;
+    let x_wing_d = 4.0;
+    let swordfish_d = 5.0;
+    let mut candidates = initial_candidates(&list, board_size as i32);
+    println!("{:?}", naked_single(&mut candidates, list));
+    println!("{:?}", hidden_single(&mut candidates, board_size as i32, list));
+    println!("{:?}", apply_pointing_pair(&mut candidates, list));
+    print!("{:?}", candidates);
     return 0.0;
 }
 
@@ -80,7 +82,7 @@ pub fn get_all_units(board_size: i32) -> Vec<Vec<Vec<(i32, i32)>>> {
     hm
 }
 
-fn hidden_single(candidates: &HashMap<(i32, i32), Vec<i32>>, board_size: i32, list: &mut Vec<Vec<i32>>) -> bool{
+fn hidden_single(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board_size: i32, list: &mut Vec<Vec<i32>>) -> bool{
     let unit_types = get_all_units(board_size);
     for units in unit_types {
         for unit in units{
@@ -93,7 +95,14 @@ fn hidden_single(candidates: &HashMap<(i32, i32), Vec<i32>>, board_size: i32, li
             for (val, cells) in count{
                 if cells.len() == 1{
                     let (r,c) = cells[0];
+                    //fix hopefully
+                    if list[r as usize][c as usize] != 0{
+                        break;
+                    }
+                    let mut _cand = candidates.get_mut(&(r,c)).unwrap();
+                    _cand = &mut vec![val];
                     list[r as usize][c as usize] = val;
+                    println!("{:?} {:?}", (r, c), val);
                     return true;
                 }
             }
@@ -102,12 +111,76 @@ fn hidden_single(candidates: &HashMap<(i32, i32), Vec<i32>>, board_size: i32, li
     false
 }
 
-fn naked_single(candidates: &HashMap<(i32, i32), Vec<i32>>, list: &mut Vec<Vec<i32>>) -> bool {
-    for ((r, c), val) in candidates{
-        if val.len() == 1{
-            list[*r as usize][*c as usize] = val[0];
+fn naked_single(candidates: &mut HashMap<(i32, i32), Vec<i32>>, list: &mut Vec<Vec<i32>>) -> bool {
+    for ((r, c), val) in candidates.clone(){
+        if val.len() == 1 && list[r as usize][c as usize] == 0{
+            let mut _cand = candidates.get_mut(&(r, c)).unwrap();
+            _cand = &mut vec![val[0]];
+            list[r as usize][c as usize] = val[0];
+            println!("{:?} {:?}", (r, c), val[0]);
             return true;
         }
     }
     false
+}
+
+fn apply_pointing_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &mut Vec<Vec<i32>>) -> bool {
+    let mut changed = false;
+
+    for box_r in (0..9).step_by(3) {
+        for box_c in (0..9).step_by(3) {
+            let mut pos_by_val: HashMap<i32, Vec<(usize, usize)>> = HashMap::new();
+
+            // Collect candidates in the box
+            for r in box_r..box_r + 3 {
+                for c in box_c..box_c + 3 {
+                    if let Some(cell_cands) = candidates.get(&(r, c)) {
+                        for &val in cell_cands {
+                            pos_by_val.entry(val).or_default().push((r as usize, c as usize));
+                        }
+                    }
+                }
+            }
+
+            // Check for values that appear only in one row or column in the box
+            for (val, positions) in pos_by_val {
+                let rows: HashSet<_> = positions.iter().map(|(r, _)| r).collect(); //rows where that value appears
+                let cols: HashSet<_> = positions.iter().map(|(_, c)| c).collect();
+
+                if rows.len() == 1 {
+                    let row = *rows.iter().next().unwrap();
+                    for col in 0..9 {
+                        if !(box_c..box_c + 3).contains(&col) && board[*row][col as usize] == 0 {
+                            if let Some(c) = candidates.get_mut(&(*row as i32, col)) {
+                                if c.contains(&val) {
+                                    let index = c.iter().position(|n| *n == val).unwrap();
+                                    c.remove(index);
+                                    changed = true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if cols.len() == 1 {
+                    let col = *cols.iter().next().unwrap();
+                    for row in 0..9 {
+                        if !(box_r..box_r + 3).contains(&row) && board[row as usize][*col] == 0 {
+                            let other_candidates = initial_candidates(board, board.len() as i32);
+                            if let Some(c) = candidates.get_mut(&(row, *col as i32)) {
+                                if c.contains(&val) {
+                                    let index = c.iter().position(|n| *n == val).unwrap();
+                                    c.remove(index);
+                                    println!("{:?}", c);
+                                    changed = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    changed
 }

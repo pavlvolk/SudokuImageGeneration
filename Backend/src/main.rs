@@ -28,6 +28,7 @@ use serde::{Deserialize, Serialize};
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::io::{self, Write};
 use crate::apply_permutations::apply_reverse_permutations;
+use crate::difficulty::serate;
 
 //Input structure
 #[derive(Deserialize)]
@@ -232,5 +233,51 @@ fn option_6(){
         [64, 65, 66, 67, 68, 69, 70, 71, 72],
         [73, 74, 75, 76, 77, 78, 79, 80, 81],
     ];
-    println!("{:?}", difficulty::get_all_units(6));
+    let mut board = vec![
+        vec![1, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![2, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![3, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![4, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![5, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![6, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![7, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![8, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+    let mut board1 = vec![
+        vec![1, 2, 3, 4, 5, 6, 7, 8, 0], // Only '9' is missing
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+    ];
+    serate(&mut board);
+    serate(&mut board1);
+    println!("{:?}", difficulty::get_all_units(9));
+
+    let mut board2 = vec![
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+    ];
+
+    // Manually place values so that only cells (0,1), (1,1), (2,1) could have 5
+    board2[0][0] = 1;
+    board2[0][2] = 2;
+    board2[1][0] = 3;
+    board2[1][2] = 4;
+    board2[2][0] = 6;
+    board2[2][2] = 7;
+    
+    println!("{:?}", serate(&mut board2));
 }
