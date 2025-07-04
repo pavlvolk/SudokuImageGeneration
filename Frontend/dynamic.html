@@ -366,25 +366,32 @@
         createGrid(size);
     }
 
-    function selectMode(mode) {
-        // Setze den Wert des versteckten Selects
-        document.getElementById('modeSelector').value = mode;
+    /*
+    Wird immer dann ausgeführt, wenn der Modus geändert wird
+    Wenn der bereits aktivierte Button angeklickt wird, ändert sich nichts
+    Ändert die Hervorhebung der Button und ruft Originalfunktion auf
 
-        // Entferne die Hervorhebung von beiden Buttons
+     */
+    function selectMode(mode) {
+        if(modeSelector.value === mode){
+            return;
+        }
+        modeSelector.value = mode;
+
         document.getElementById('markBtn').classList.remove('active-mode');
         document.getElementById('inputBtn').classList.remove('active-mode');
 
-        // Füge dem aktuell gewählten Button die aktive Klasse hinzu
         if (mode === 'mark') {
             document.getElementById('markBtn').classList.add('active-mode');
         } else if (mode === 'input') {
             document.getElementById('inputBtn').classList.add('active-mode');
         }
-
-        // Rufe die Originalfunktion auf
         changeMode();
     }
 
+    /*
+    Setzt den Wert für markMode, welcher später ans Backend übergeben wird
+     */
     function changeMode() {
         if (modeSelector.value === "input"){
             markMode = false;
@@ -404,9 +411,19 @@
         document.getElementById("stateDisplay").textContent = JSON.stringify(gridState, null, 2);
     }
 
+    /*
+    Blendet die beiden Download-Button ein, immer dann wenn ein Sudoku generiert wurde
+     */
     function showDownloadButton() {
         document.getElementById("downloadBtn").style.display = "block";
         document.getElementById("download filled sudoku").style.display = "block";
+    }
+    /*
+    Lässt die Button verschwinden, immer bei Reset
+     */
+    function hideDownloadButton() {
+        document.getElementById("downloadBtn").style.display = "none";
+        document.getElementById("download filled sudoku").style.display = "none";
     }
 
     function createSudoku() {
