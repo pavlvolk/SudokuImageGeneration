@@ -348,7 +348,15 @@
     }
 
 
+    /*
+    Verändert die Grid Size, falls ein Button ausgewählt wurde, welcher nicht aktiv ist
+    Ruft danach Reset Grid auf
+     */
     function setGridSize(size) {
+        if(currentSize === size){
+            return;
+        }
+
         document.getElementById("grid4").classList.remove('active-mode')
         document.getElementById("grid9").classList.remove('active-mode')
         document.getElementById("grid6").classList.remove('active-mode')
@@ -361,9 +369,7 @@
         }
 
         currentSize = size;
-        changes = 0;
-        updateChangeCounter();
-        createGrid(size);
+        resetGrid();
     }
 
     /*
@@ -404,10 +410,12 @@
 
     /*
     resetet Änderungszahl
+    Verstekt die Download-Buttons, da nicht mehr am aktuellen Sudoku gearbeitet wird
      */
     function resetGrid() {
         changes = 0;
         updateChangeCounter();
+        hideDownloadButton();
         createGrid(currentSize);
     }
 
