@@ -126,17 +126,23 @@ fn naked_single(candidates: &mut HashMap<(i32, i32), Vec<i32>>, list: &mut Vec<V
 
 fn apply_pointing_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &mut Vec<Vec<i32>>) -> bool {
     let mut changed = false;
-
-    for box_r in (0..9).step_by(3) {
-        for box_c in (0..9).step_by(3) {
+    
+    let vertical_stepsize = board.len().isqrt();
+    let mut horizontal_stepsize = vertical_stepsize;
+    if board.len() == 6{
+        horizontal_stepsize += 1;
+    }
+    
+    for box_r in (0..board.len()).step_by(vertical_stepsize) {
+        for box_c in (0..board.len()).step_by(horizontal_stepsize) {
             let mut pos_by_val: HashMap<i32, Vec<(usize, usize)>> = HashMap::new();
 
             // Collect candidates in the box
-            for r in box_r..box_r + 3 {
-                for c in box_c..box_c + 3 {
-                    if let Some(cell_cands) = candidates.get(&(r, c)) {
+            for r in box_r..box_r + vertical_stepsize {
+                for c in box_c..box_c + horizontal_stepsize {
+                    if let Some(cell_cands) = candidates.get(&(r as i32, c as i32)) {
                         for &val in cell_cands {
-                            pos_by_val.entry(val).or_default().push((r as usize, c as usize));
+                            pos_by_val.entry(val).or_default().push((r, c));
                         }
                     }
                 }
@@ -149,9 +155,9 @@ fn apply_pointing_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &m
 
                 if rows.len() == 1 {
                     let row = *rows.iter().next().unwrap();
-                    for col in 0..9 {
-                        if !(box_c..box_c + 3).contains(&col) && board[*row][col as usize] == 0 {
-                            if let Some(c) = candidates.get_mut(&(*row as i32, col)) {
+                    for col in 0..board.len() {
+                        if !(box_c..box_c + horizontal_stepsize).contains(&col) && board[*row][col] == 0 {
+                            if let Some(c) = candidates.get_mut(&(*row as i32, col as i32)) {
                                 if c.contains(&val) {
                                     let index = c.iter().position(|n| *n == val).unwrap();
                                     c.remove(index);
@@ -164,10 +170,9 @@ fn apply_pointing_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &m
 
                 if cols.len() == 1 {
                     let col = *cols.iter().next().unwrap();
-                    for row in 0..9 {
-                        if !(box_r..box_r + 3).contains(&row) && board[row as usize][*col] == 0 {
-                            let other_candidates = initial_candidates(board, board.len() as i32);
-                            if let Some(c) = candidates.get_mut(&(row, *col as i32)) {
+                    for row in 0..board.len() {
+                        if !(box_r..box_r + vertical_stepsize).contains(&row) && board[row][*col] == 0 {
+                            if let Some(c) = candidates.get_mut(&(row as i32, *col as i32)) {
                                 if c.contains(&val) {
                                     let index = c.iter().position(|n| *n == val).unwrap();
                                     c.remove(index);

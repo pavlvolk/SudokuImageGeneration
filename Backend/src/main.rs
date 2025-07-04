@@ -270,6 +270,22 @@ fn option_6(){
         vec![0; 9],
         vec![0; 9],
     ];
+    
+    let mut board3 = vec![
+        vec![1, 0, 0, 0],
+        vec![2, 0, 0, 0],
+        vec![0, 0, 0, 0],
+        vec![0, 0, 0, 0],
+    ];
+
+    let mut board4 = vec![
+        vec![1, 0, 4, 0, 0, 0],
+        vec![2, 0, 5, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0],
+    ];
 
     // Manually place values so that only cells (0,1), (1,1), (2,1) could have 5
     board2[0][0] = 1;
@@ -280,4 +296,6 @@ fn option_6(){
     board2[2][2] = 7;
     
     println!("{:?}", serate(&mut board2));
+    println!("{:?}", serate(&mut board3));
+    println!("{:?}", serate(&mut board4));
 }
