@@ -13,14 +13,20 @@ pub fn serate(list: &mut Vec<Vec<i32>>) -> f64{
     let x_wing_d = 4.0;
     let swordfish_d = 5.0;
     let mut candidates = initial_candidates(&list, board_size as i32);
-    println!("{:?}", naked_single(&mut candidates, list));
-    println!("{:?}", hidden_single(&mut candidates, board_size as i32, list));
-    println!("{:?}", apply_pointing_pair(&mut candidates, list));
-    print!("{:?}", candidates);
+    //println!("{:?}", naked_single(&mut candidates, list));
+    //println!("{:?}", hidden_single(&mut candidates, board_size as i32, list));
+    //println!("{:?}", apply_pointing_pair(&mut candidates, list));
+    //println!("{:?}", apply_claiming_pair(&mut candidates, list));
+    println!("{:?}", candidates);
     return 0.0;
 }
 
 pub fn initial_candidates(list: &Vec<Vec<i32>>, board_size: i32) -> HashMap<(i32, i32), Vec<i32>>{
+    let vertical_box_size = board_size.isqrt();
+    let mut horizontal_box_size = vertical_box_size;
+    if board_size == 6{
+        horizontal_box_size += 1;
+    }
     let mut candidates: HashMap<(i32, i32), Vec<i32>> = HashMap::new();
     for r in 0..board_size {
         for c in 0..board_size {
@@ -30,6 +36,45 @@ pub fn initial_candidates(list: &Vec<Vec<i32>>, board_size: i32) -> HashMap<(i32
                 for val in 1..=board_size {
                     candidates.entry((r,c)).or_insert(vec![]).push(val);
                 }
+            }
+        }
+    }
+    for r in 0..board_size {
+        for c in 0..board_size {
+            if list[r as usize][c as usize] != 0 {
+                let val = list[r as usize][c as usize];
+                for inner_r in 0..board_size {
+                    if let Some(cell) = candidates.get_mut(&(inner_r,c)){
+                        println!("{}", list[inner_r as usize][c as usize]);
+                        if cell.contains(&val) && r != inner_r && list[inner_r as usize][c as usize] == 0{
+                            let index = cell.iter().position(|n| *n == val).unwrap();
+                            cell.remove(index);
+                            println!("{} {} {}", inner_r, c, val)
+                        }
+                    }
+                }
+                for inner_c in 0..board_size {
+                    if let Some(cell) = candidates.get_mut(&(r,inner_c)){
+                        if cell.contains(&(val)) && c != inner_c && list[r as usize][inner_c as usize] == 0{
+                            let index = cell.iter().position(|n| *n == val).unwrap();
+                            cell.remove(index);
+                            println!("{} {} {}", r, inner_c, val)
+                        }
+                    }
+                }
+                let block_corner_r = (r % vertical_box_size)*vertical_box_size;
+                let block_corner_c = (c % horizontal_box_size)*horizontal_box_size;
+                for br in block_corner_r..block_corner_r + vertical_box_size {
+                    for bc in block_corner_c..block_corner_c + horizontal_box_size {
+                        if let Some(cell) = candidates.get_mut(&(br,bc)){
+                            if cell.contains(&val) && r != br && c != bc && list[br as usize][bc as usize] == 0{
+                                let index = cell.iter().position(|n| *n == val).unwrap();
+                                cell.remove(index);
+                            }
+                        }
+                    }
+                }
+            
             }
         }
     }
@@ -187,5 +232,83 @@ fn apply_pointing_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &m
         }
     }
 
+    changed
+}
+
+fn apply_claiming_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &mut Vec<Vec<i32>>) -> bool {
+    let vertical_box_size = board.len().isqrt();
+    let mut horizontal_box_size = vertical_box_size;
+    if board.len() == 6{
+        horizontal_box_size += 1;
+    }
+    let mut changed = false;
+    for r in 0..board.len(){
+        for val in 1..=board.len(){
+            let mut boxes:Vec<i32> = vec![];
+            for c in 0..board.len(){
+                if let Some(cell_cands) = candidates.get(&(r as i32, c as i32)){
+                    if cell_cands.contains(&(val as i32)){
+                        if !boxes.contains(&((c % horizontal_box_size) as i32)){
+                            boxes.push((c % horizontal_box_size) as i32)
+                        }
+                    }
+                }
+            }
+            if boxes.len() == 1{
+                let c = *boxes.iter().next().unwrap() as usize;
+                let box_corner_r = r%(vertical_box_size);
+                let box_corner_c = c*horizontal_box_size;
+                for br in box_corner_r..box_corner_r + vertical_box_size {
+                    for bc in box_corner_c..box_corner_c + horizontal_box_size {
+                        if (box_corner_r + br) != r {
+                            if let Some(cell) = candidates.get_mut(&((box_corner_r + br) as i32, (box_corner_c + bc) as i32)){ //TODO hier nur br, bc??
+                                if cell.contains(&(val as i32)) {
+                                    let index = cell.iter().position(|n| *n == val as i32).unwrap();
+                                    cell.remove(index);
+                                    println!("{:?} {:?}", (box_corner_r + br, box_corner_c + bc), val);
+                                    changed = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    for c in 0..board.len(){
+        for val in 0..=board.len(){
+            let mut boxes:Vec<i32> = vec![];
+            for r in 0..board.len(){
+                if let Some(cell_cands) = candidates.get(&(r as i32, c as i32)){
+                    if cell_cands.contains(&(val as i32)){
+                        if !boxes.contains(&((r % (vertical_box_size)) as i32)){
+                            boxes.push((r % (vertical_box_size)) as i32)
+                        }
+                    }
+                }
+            }
+
+            if boxes.len() == 1{
+                let r = *boxes.iter().next().unwrap() as usize;
+                let box_corner_r = r*(vertical_box_size);
+                let box_corner_c = c%(horizontal_box_size);
+                for br in box_corner_r..box_corner_r + vertical_box_size {
+                    for bc in box_corner_c..box_corner_c + horizontal_box_size {
+                        if (box_corner_c + bc) != c {
+                            if let Some(cell) = candidates.get_mut(&((box_corner_r + br) as i32, (box_corner_c + bc) as i32)){
+                                if cell.contains(&(val as i32)) {
+                                    let index = cell.iter().position(|n| *n == val as i32).unwrap();
+                                    cell.remove(index);
+                                    println!("{:?} {:?}", (box_corner_r + br, box_corner_c + bc), val);
+                                    changed = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     changed
 }

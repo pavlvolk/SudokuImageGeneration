@@ -255,12 +255,12 @@ fn option_6(){
         vec![0; 9],
         vec![0; 9],
     ];
-    serate(&mut board);
-    serate(&mut board1);
-    println!("{:?}", difficulty::get_all_units(9));
+    //serate(&mut board);
+   // serate(&mut board1);
+    //println!("{:?}", difficulty::get_all_units(9));
 
     let mut board2 = vec![
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![1, 2, 3, 4, 5, 6, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -279,21 +279,15 @@ fn option_6(){
     ];
 
     let mut board4 = vec![
-        vec![1, 0, 4, 0, 0, 0],
-        vec![2, 0, 5, 0, 0, 0],
+        vec![1, 2, 4, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0],
     ];
-
-    // Manually place values so that only cells (0,1), (1,1), (2,1) could have 5
-    board2[0][0] = 1;
-    board2[0][2] = 2;
-    board2[1][0] = 3;
-    board2[1][2] = 4;
-    board2[2][0] = 6;
-    board2[2][2] = 7;
+    
+    
     
     println!("{:?}", serate(&mut board2));
     println!("{:?}", serate(&mut board3));
