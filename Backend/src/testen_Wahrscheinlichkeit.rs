@@ -84,18 +84,18 @@ fn process_list_threads(list: Vec<usize>) -> Option<Vec<i32>> {
     let file = File::open(SOLUTION).unwrap();
     let reader = BufReader::new(file);
     let mut results = Vec::new();
-    for _ in 0..NUMBER_OF_THREADS{
+    for _ in 0..*NUMBER_OF_THREADS{
         results.push(Vec::new());
     }
     let mut i = 0;
     for line in reader.lines() {
-        if i > NUMBER_OF_THREADS * SOLUTION_PER_THREAD {
+        if i > *NUMBER_OF_THREADS * SOLUTION_PER_THREAD {
             break;
         }
-        results[i%NUMBER_OF_THREADS].push(line.unwrap());
+        results[i%*NUMBER_OF_THREADS].push(line.unwrap());
         i += 1;
     }
-    for j in 0..NUMBER_OF_THREADS{
+    for j in 0..*NUMBER_OF_THREADS{
         let transformed_clone: Vec<usize> = transformed.clone();
         let tx = tx.clone();
         let stop_flag = Arc::clone(&stop_flag);
@@ -164,14 +164,3 @@ pub fn csv_tests(file_path: &str, threads: bool) -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-
-
-
-/*
-fn main() {
-    if let Err(e) = read_and_process_csv("pfad/zur/deiner/datei.csv") {
-        eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
-    }
-}
-
- */

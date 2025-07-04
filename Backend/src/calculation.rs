@@ -9,7 +9,7 @@ use crate::sudoku;
 use crate::sudoku::Sudoku;
 use crate::sudoku_clauses::sudoku_clauses;
 use std::sync::{atomic::{AtomicBool, Ordering}, mpsc, Arc};
-use crate::constants::SOLUTION;
+use crate::constants::{NUMBER_OF_THREADS, SOLUTION, SOLUTION_PER_THREAD};
 use crate::constants::TEST;
 
 /**
@@ -44,6 +44,8 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
                 i += 1;
             }
         }else if sudoku.board_size == 9 {
+            
+            /*
             let file = File::open(SOLUTION)?;
             let reader = BufReader::new(file);
 
@@ -86,6 +88,10 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
                 count += 1;
 
             }
+            
+             */
+            
+            return Ok(thread_calculation(list));
         }
     } else {
         let (unique, possible_sol) = sudoku::Sudoku::unique(sudoku, &list, &mut solver);
@@ -97,22 +103,26 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
 }
 
 
-pub fn thread_calculation(list: &Vec<usize>, path: &str, sudoku: &Sudoku) -> Option<Vec<i32>> {
+pub fn thread_calculation(list: &Vec<usize>) -> Option<Vec<i32>> {
+    let sudoku = sudoku::Sudoku::new(9);
     let (tx, rx) = mpsc::channel();
     let stop_flag = Arc::new(AtomicBool::new(false));
     let mut handles = vec![];
-    let file = File::open(path).unwrap();
+    let file = File::open(SOLUTION).unwrap();
     let reader = BufReader::new(file);
     let mut results = Vec::new();
-    for _ in 0..8{
+    for _ in 0..*NUMBER_OF_THREADS{
         results.push(Vec::new());
     }
     let mut i = 0;
     for line in reader.lines() {
-        results[i%8].push(line.unwrap());
+        if i > *NUMBER_OF_THREADS * SOLUTION_PER_THREAD {
+            break;
+        }
+        results[i%*NUMBER_OF_THREADS].push(line.unwrap());
         i += 1;
     }
-    for j in 0..8{
+    for j in 0..*NUMBER_OF_THREADS{
         let thread_list = list.clone();
         let tx = tx.clone();
         let stop_flag = Arc::clone(&stop_flag);
