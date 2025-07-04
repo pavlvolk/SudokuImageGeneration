@@ -77,9 +77,9 @@
         }
 
         .cell {
-            width: 40px;
-            height: 40px;
-            border: 1px solid #ccc;
+            width: 50px;
+            height: 50px;
+            border: 1px solid black;
             cursor: pointer;
             background-color: white;
             display: flex;
@@ -91,7 +91,7 @@
         }
 
         .cell.marked {
-            background-color: black;
+            background-color: dodgerblue;
             color: white;
         }
 
@@ -109,10 +109,17 @@
             background-color: #f0f0f0;
         }
 
-        .thick-top { border-top: 3px solid black !important; }
-        .thick-left { border-left: 3px solid black !important; }
-        .thick-right { border-right: 3px solid black !important; }
-        .thick-bottom { border-bottom: 3px solid black !important; }
+        .cell.ausgabe {
+            background-color: gray;
+            font-weight: bold;
+            font-size: xx-large;
+        }
+
+        .thick-top { border-top: 4px solid black !important; }
+        .thick-left { border-left: 4px solid black !important; }
+        .thick-right { border-right: 4px solid black !important; }
+        .thick-bottom { border-bottom: 4px solid black !important; }
+
 
         pre {
             margin-top: 2rem;
@@ -129,6 +136,10 @@
             display: none;
             font-size: 1.2rem;
             margin-top: 1rem;
+        }
+
+        #filledContainer {
+            display: flex;
         }
 
         #sudokuContainer {
@@ -204,10 +215,11 @@
 <div id="loader">⏳ Lade Sudokus...</div>
 
 <div id="sudokuContainer"></div>
-
-<button id="downloadBtn" onclick="downloadSudokus()" style="display:none; margin-top: 1rem;">
-    Sudokus herunterladen
-</button>
+<div id="filledContainer" class = "grid"></div>
+<div class="button-group">
+    <button id="downloadBtn" onclick="downloadSudokus()" style="display:none; margin-top: 1rem;">download partial Sudoku</button>
+    <button id="download filled sudoku" onclick="downloadFilledSudoku()" style="display:none; margin-top: 1rem;">download filled Sudoku</button>
+</div>
 <!--
 <h2>Aktueller Zustand (gridState als 1D-Liste)</h2>
 <pre id="stateDisplay"></pre>
@@ -244,6 +256,7 @@
     const modeSelector = document.getElementById("modeSelector");
     const loader = document.getElementById("loader");
     const sudokuContainer = document.getElementById("sudokuContainer");
+    const filledContainer = document.getElementById("filledContainer");
     const serverUrl = "http://localhost:8080";
 
     function getBlockSize(size) {
@@ -252,6 +265,7 @@
         if (size === 9) return [3, 3];
         return [1, 1];
     }
+
 
     function createGrid(size) {
         const [blockRows, blockCols] = getBlockSize(size);
@@ -392,6 +406,7 @@
 
     function showDownloadButton() {
         document.getElementById("downloadBtn").style.display = "block";
+        document.getElementById("download filled sudoku").style.display = "block";
     }
 
     function createSudoku() {
@@ -404,8 +419,15 @@
             state: [...gridState]
         };
 
+        let errors = validTupel(tupel);
+        if (changes <17 && tupel.size === 9){
+            alert("markiere mindestens 17 Elemente")
+        }else
+        if (errors.length !== 0){
+            alert("markiere Elemente bis nichts mehr rot ist")
+        }else {
 
-        console.log("Sudoku-Tupel:", tupel);
+            console.log("Sudoku-Tupel:", tupel);
 
         loader.style.display = "block";
         sudokuContainer.innerHTML = "";
@@ -453,7 +475,11 @@
 
             loader.style.display = "block";
             sudokuContainer.innerHTML = "";
+
+            filledContainer.innerHTML = "";
             document.getElementById("downloadBtn").style.display = "none";
+        }
+
     }
 
 
@@ -682,7 +708,7 @@
     function renderSudokuPreview(tupel) {
         const container = document.createElement("div");
         container.className = "grid";
-        container.style.gridTemplateColumns = `repeat(${tupel.size}, 40px)`;
+        container.style.gridTemplateColumns = `repeat(${tupel.size}, 50px)`;
 
         const [blockRows, blockCols] = getBlockSize(tupel.size);
 
@@ -701,6 +727,9 @@
 
                 if (value !== 0) {
                     cell.textContent = value;
+
+                    cell.classList.add("ausgabe")
+
                 }
                 else{
                     cell.textContent = "";
@@ -711,6 +740,52 @@
         }
 
         sudokuContainer.appendChild(container);
+    }
+
+    function filledSudoku(tupel , state){
+        const container = document.createElement("div");
+        container.className = "grid";
+        container.style.gridTemplateColumns = `repeat(${tupel.size}, 50px)`;
+        document.getElementById("filledContainer").style.display = "none";
+
+        const [blockRows, blockCols] = getBlockSize(tupel.size);
+
+        for (let row = 0; row < tupel.size; row++) {
+            for (let col = 0; col < tupel.size; col++) {
+                const index = row * tupel.size + col;
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+
+                if (row % blockRows === 0) cell.classList.add("thick-top");
+                if (col % blockCols === 0) cell.classList.add("thick-left");
+                if (col === tupel.size - 1) cell.classList.add("thick-right");
+                if (row === tupel.size - 1) cell.classList.add("thick-bottom");
+
+                cell.textContent = state[index];
+                container.appendChild(cell);
+            }
+        }
+
+        filledContainer.appendChild(container);
+    }
+
+    async function downloadFilledSudoku(){
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        const container = document.getElementById("filledContainer");
+
+        await html2canvas(container).then((canvas) => {
+            const imgData = canvas.toDataURL("image/png");
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const imgProps = doc.getImageProperties(imgData);
+            const ratio = imgProps.width / imgProps.height;
+            const imgWidth = pageWidth - 20;
+            const imgHeight = imgWidth / ratio;
+
+            doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+            doc.save("sudokus.pdf");
+        });
     }
 
     async function downloadSudokus() {
