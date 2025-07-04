@@ -391,6 +391,7 @@
 
     /*
     Setzt den Wert für markMode, welcher später ans Backend übergeben wird
+    Ruft anschließend Reset Grid auf
      */
     function changeMode() {
         if (modeSelector.value === "input"){
@@ -398,9 +399,12 @@
         }else if (modeSelector.value === "mark"){
             markMode = true
         }
-        createGrid(currentSize);
+        resetGrid();
     }
 
+    /*
+    resetet Änderungszahl
+     */
     function resetGrid() {
         changes = 0;
         updateChangeCounter();
