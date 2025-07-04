@@ -411,7 +411,7 @@
 
     function createSudoku() {
 
-        document.getElementById('loadingOverlay').style.display = 'flex';
+
 
         const tupel = {
             size: currentSize,
@@ -426,6 +426,7 @@
         if (errors.length !== 0){
             alert("markiere Elemente bis nichts mehr rot ist")
         }else {
+            document.getElementById('loadingOverlay').style.display = 'flex';
 
             console.log("Sudoku-Tupel:", tupel);
 
