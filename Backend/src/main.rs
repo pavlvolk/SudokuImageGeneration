@@ -8,6 +8,8 @@ mod sudoku_clauses;
 mod set_values_from_solution;
 mod testen_Wahrscheinlichkeit;
 mod calculation;
+mod testen_der_neuen_loesung;
+mod generate_picture;
 
 mod constants;
 // Added to ensure the module is included
@@ -31,6 +33,8 @@ use std::io::{self, Write};
 use crate::apply_permutations::apply_reverse_permutations;
 use crate::constants::SOLUTION;
 use crate::constants::TEST;
+use crate::testen_der_neuen_loesung::csv_tests_compare;
+use crate::generate_picture::generate_picture;
 
 //Input structure
 #[derive(Deserialize)]
@@ -61,8 +65,9 @@ async fn main() {
         "Option 1: Beispielsudokus berechnen",
         "Option 2: Zeiten testen",
         "Option 3: Neue Methode",
-        "Option 4: Programm beenden",
-        "Option 5: Start Server",       
+        "Option 4: Neue Tests",
+        "Option 5: Start Server",
+        "Option 6: Use Picture",
     ];
 
     let selection = Select::with_theme(&ColorfulTheme::default())
@@ -78,6 +83,7 @@ async fn main() {
         2 => option_3(),
         3 => option_4(),
         4 => option_5().await.unwrap(),
+        5 => option_6(),
         _ => println!("Ungültige Auswahl."),
     }
 }
@@ -150,7 +156,8 @@ fn option_3() {
 }
 
 fn option_4() {
-    println!("👋 Programm wird beendet. Auf Wiedersehen!");
+    println!("verschiedene Tests");
+    csv_tests_compare(TEST);
 }
 
 #[post("/api/process-tuple")]
@@ -203,4 +210,8 @@ async fn option_5() -> std::io::Result<()> {
         .run()
         .await?;
     Ok(())
+}
+
+fn option_6(){
+    generate_picture();
 }
