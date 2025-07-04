@@ -8,6 +8,8 @@
     <!-- PDF & Screenshot Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="node_modules/jspdf/dist/jspdf.umd.min.js"></script>
+    <script src="node_modules/svg2pdf.js/dist/svg2pdf.umd.min.js"></script>
 
     <style>
         body {
@@ -225,7 +227,7 @@
 <pre id="stateDisplay"></pre>
 -->
 
-<p id="changeCounter">Änderungen: 0</p>
+<p id="changeCounter">Markierte Felder: 0</p>
 
 <div id="errorOutput" style="color:red; margin-top:10px;"></div>
 
@@ -258,6 +260,9 @@
     const sudokuContainer = document.getElementById("sudokuContainer");
     const filledContainer = document.getElementById("filledContainer");
     const serverUrl = "http://localhost:8080";
+    const { jsPDF } = window.jspdf;
+    const { svg2pdf } = window.svg2pdf;
+    const svg = document.getElementById('sudokuSvg');
 
     function getBlockSize(size) {
         if (size === 4) return [2, 2];
@@ -343,8 +348,11 @@
 
 
 
+    /*
+    Updatet die Anzahl der markierten Felder
+     */
     function updateChangeCounter() {
-        document.getElementById("changeCounter").textContent = `Änderungen: ${changes}`;
+        document.getElementById("changeCounter").textContent = `Markierte Felder: ${changes}`;
     }
 
 
@@ -440,7 +448,7 @@
 
     function createSudoku() {
 
-        document.getElementById('loadingOverlay').style.display = 'flex';
+
 
         const tupel = {
             size: currentSize,
@@ -457,11 +465,11 @@
         }else {
 
             console.log("Sudoku-Tupel:", tupel);
-
-        loader.style.display = "block";
-        sudokuContainer.innerHTML = "";
-        document.getElementById("downloadBtn").style.display = "none";
-        const payload = {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            loader.style.display = "block";
+            sudokuContainer.innerHTML = "";
+            document.getElementById("downloadBtn").style.display = "none";
+            const payload = {
                     data: gridState,
                     length: currentSize * currentSize,
                     markingmode: markMode,
