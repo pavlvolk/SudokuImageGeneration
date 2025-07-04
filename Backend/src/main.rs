@@ -105,7 +105,7 @@ fn option_1() {
     let hints:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
     let mut s = Sudoku::new(9);
     let hints1:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
-    let transformed: Vec<usize> = h
+    let transformed: Vec<usize> = hints1
         .into_iter()
         .map(|x| if x == 0 { 0 } else { 1 })
         .collect();
@@ -126,6 +126,7 @@ fn option_2() {
 
 fn option_3() {
 
+    let start = Instant::now();
     println!("Threads");
     let h = vec![
         0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -150,9 +151,9 @@ fn option_3() {
         .collect();
     let count_ones = transformed.iter().filter(|&&x| x != 0).count();
     println!("Anzahl der 1s: {}", count_ones);
-    let mut s = Sudoku::new(9);
-    println!("{:?}", calculation::thread_calculation(&transformed, SOLUTION, &mut s));
+    println!("{:?}", calculation::thread_calculation(&transformed));
 
+    println!("{}", Instant::now().duration_since(start).as_millis());
 }
 
 fn option_4() {
