@@ -214,15 +214,16 @@
     <button onclick="resetGrid()">Zurücksetzen</button>
 </div>
 
-<svg xmlns="http://www.w3.org/2000/svg" width="450" height="450" viewBox="0 0 450 450" id="partialSvg" style="display:none;">
+
+<svg xmlns="http://www.w3.org/2000/svg"  id="partialSvg" style="display:none;">
     <style>
-        text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }    </style>
-    <rect width="450" height="450" fill="white" />
+        text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }
+    </style>
 </svg>
 <svg xmlns="http://www.w3.org/2000/svg" width="450" height="450" viewBox="0 0 450 450" id="fullSvg" style="display:none;">
     <style>
-        text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }    </style>
-    <rect width="450" height="450" fill="white" />
+        text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }
+    </style>
 </svg>
 
 <div id="loader">⏳ Lade Sudokus...</div>
@@ -762,11 +763,25 @@
             svg.removeChild(svg.lastChild);
         }
 
-        for(let row=0; row<9; row++) {
-            for(let col=0; col<9; col++) {
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+
+        rect.setAttribute('x', 0);
+        rect.setAttribute('y', 0);
+        rect.setAttribute('width', 50*currentSize);  // Dynamische Breite
+        rect.setAttribute('height', 50*currentSize); // Dynamische Höhe
+        rect.setAttribute('fill', 'white');
+
+
+
+
+        svg.appendChild(rect);
+
+
+        for(let row=0; row<currentSize; row++) {
+            for(let col=0; col<currentSize; col++) {
                 let x = col*50;
                 let y = row*50;
-                let index = row* 9 + col; //TODO algemein machen
+                let index = row* currentSize + col;
 
                 const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
                 rect.setAttribute("x", x);
@@ -799,13 +814,37 @@
                 }
             }
         }
+        let lines = [];
 
-        const lines = [
-            {x1:0,y1:150,x2:450,y2:150},
-            {x1:0,y1:300,x2:450,y2:300},
-            {x1:150,y1:0,x2:150,y2:450},
-            {x1:300,y1:0,x2:300,y2:450},
-        ];
+        if(currentSize === 9){
+            lines = [
+                {x1:0,y1:150,x2:450,y2:150},
+                {x1:0,y1:300,x2:450,y2:300},
+                {x1:150,y1:0,x2:150,y2:450},
+                {x1:300,y1:0,x2:300,y2:450},
+            ];
+            svg.setAttribute('viewBox', `0 0 450 450`);
+            svg.setAttribute('width', '450');
+            svg.setAttribute('height', '450');
+        }else if(currentSize === 6){
+            lines = [
+                {x1:0,y1:100,x2:300,y2:100},
+                {x1:0,y1:200,x2:300,y2:200},
+                {x1:150,y1:0,x2:150,y2:300},
+            ];
+            svg.setAttribute('viewBox', `0 0 300 300`);
+            svg.setAttribute('width', '300');
+            svg.setAttribute('height', '300');
+        }else{
+            lines = [
+                {x1:0,y1:100,x2:200,y2:100},
+                {x1:100,y1:0,x2:100,y2:200},
+            ];
+            svg.setAttribute('viewBox', `0 0 200 200`);
+            svg.setAttribute('width', '200');
+            svg.setAttribute('height', '200');
+        }
+
         lines.forEach(lineData => {
             const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
             line.setAttribute("x1", lineData.x1);
@@ -820,8 +859,8 @@
         const border = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         border.setAttribute("x", 0);
         border.setAttribute("y", 0);
-        border.setAttribute("width", 450);
-        border.setAttribute("height", 450);
+        border.setAttribute("width", 50*currentSize);
+        border.setAttribute("height", 50* currentSize);
         border.setAttribute("fill", "none");
         border.setAttribute("stroke", "black");
         border.setAttribute("stroke-width", 8);   // noch dickerer Rahmen außen
@@ -833,10 +872,10 @@
     Mit svg kann man angeben ob das volle oder nur das partielle
      */
     async function downloadSudoku(svg) {
-        const pdf = new jsPDF({ unit: 'pt', format: [450, 450] });
+        const pdf = new jsPDF({ unit: 'pt', format: [50*currentSize, 50*currentSize] });
 
         pdf.setFillColor(255, 255, 255);
-        pdf.rect(0, 0, 450, 450, 'F');
+        pdf.rect(0, 0, 50*currentSize, 50*currentSize, 'F');
 
         svg.style.display = "block";
         await svg2pdf(svg, pdf, { x: 0, y: 0, scale: 1 });
