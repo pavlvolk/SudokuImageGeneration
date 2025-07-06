@@ -18,7 +18,10 @@
             flex-direction: column;
             align-items: center;
             padding: 2rem;
+            background: url('https://www.bund-nrw.de/fileadmin/nrw/bilder/Naturschutz/Biber/Biber_an_gefaelltem_Baumstamm_-_Leopold_Kanzler_gross_01.jpg') no-repeat center center fixed;
+            background-size: cover;
         }
+
 
         .controls {
             display: flex;
@@ -134,11 +137,6 @@
             font-size: 0.9rem;
         }
 
-        #loader {
-            display: none;
-            font-size: 1.2rem;
-            margin-top: 1rem;
-        }
 
         #filledContainer {
             display: flex;
@@ -175,6 +173,16 @@
             text-align: left;
         }
 
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .rotating {
+            display: inline-block;
+            animation: rotate 2s linear infinite;
+        }
+
     </style>
 </head>
 <body>
@@ -199,13 +207,46 @@
         <button id="inputBtn" onclick="selectMode('input')">Zahlen eingeben</button>
     </div>
 
-    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
-            <img src="https://www.animierte-gifs.net/data/media/983/animiertes-biber-bild-0021.gif" border="0" alt="animiertes-biber-bild-0021" />
-    </div>
+
 
 
     <button onclick="showSudokuRules()">Sudoku-Regeln anzeigen</button>
 </div>
+
+<div id="loadingOverlay" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+">
+
+    <!-- Lade-GIF -->
+    <img src="https://www.animierte-gifs.net/data/media/983/animiertes-biber-bild-0021.gif" border="0" alt="animiertes-biber-bild-0021" />
+
+    <!-- Lade-Text mit weißem Hintergrund -->
+    <div id="loader2" style="
+        margin-top: 20px;
+        background: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 24px;
+        color: black;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    ">
+        <span class="rotating">⏳</span> Lade Sudokus...
+    </div>
+
+</div>
+
 
 <div id="grid" class="grid"></div>
 
@@ -226,7 +267,7 @@
     </style>
 </svg>
 
-<div id="loader">⏳ Lade Sudokus...</div>
+
 
 <div id="sudokuContainer"></div>
 <div id="filledContainer" class = "grid"></div>
@@ -234,12 +275,16 @@
     <button id="downloadBtn" onclick="downloadSudoku(partialSvg)" style="display:none; margin-top: 1rem;">download partial Sudoku</button>
     <button id="download filled sudoku" onclick="downloadSudoku(fullSvg)" style="display:none; margin-top: 1rem;">download filled Sudoku</button>
 </div>
-<!--
-<h2>Aktueller Zustand (gridState als 1D-Liste)</h2>
-<pre id="stateDisplay"></pre>
--->
 
-<p id="changeCounter">Markierte Felder: 0</p>
+
+<p id="changeCounter" style="
+    background: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: inline-block;
+">
+    Markierte Felder: 0
+</p>
 
 <div id="errorOutput" style="color:red; margin-top:10px;"></div>
 
@@ -271,7 +316,6 @@
     document.getElementById("markBtn").classList.add('active-mode')
     const gridElement = document.getElementById("grid");
     const modeSelector = document.getElementById("modeSelector");
-    const loader = document.getElementById("loader");
     const sudokuContainer = document.getElementById("sudokuContainer");
     const filledContainer = document.getElementById("filledContainer");
     const serverUrl = "http://localhost:8080";
@@ -464,6 +508,8 @@
     }
 
     function createSudoku() {
+        partialSvg.style.display = "none";
+        hideDownloadButton();
 
 
 
@@ -483,7 +529,6 @@
 
             console.log("Sudoku-Tupel:", tupel);
             document.getElementById('loadingOverlay').style.display = 'flex';
-            loader.style.display = "block";
             sudokuContainer.innerHTML = "";
             document.getElementById("downloadBtn").style.display = "none";
             const payload = {
@@ -500,7 +545,6 @@
         })
         .then(response => response.json())
         .then(result => {
-            loader.style.display = "none";
             if (result.hassolution === false) {
                 alert("Das markierte Sudoku ist ungültig!");
             } else {
@@ -511,19 +555,14 @@
                 }
             })
         .catch(error => {
-            loader.style.display = "none";
             alert("Es ist ein Fehler aufgetreten: " + error.message);
             console.error("Error:", error);
         })
         .finally(() => {
-            // Wird immer ausgeführt - egal ob Erfolg oder Fehler
-            loader.style.display = "none";
             document.getElementById("loadingOverlay").style.display = "none";
         });
 
             console.log("Sudoku-Tupel:", tupel);
-
-            loader.style.display = "block";
             sudokuContainer.innerHTML = "";
 
             filledContainer.innerHTML = "";
