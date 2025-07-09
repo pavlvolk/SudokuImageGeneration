@@ -18,7 +18,7 @@
             flex-direction: column;
             align-items: center;
             padding: 2rem;
-            background: url('https://www.bund-nrw.de/fileadmin/nrw/bilder/Naturschutz/Biber/Biber_an_gefaelltem_Baumstamm_-_Leopold_Kanzler_gross_01.jpg') no-repeat center center fixed;
+            background-image: url('https://www.bund-nrw.de/fileadmin/nrw/bilder/Naturschutz/Biber/Biber_an_gefaelltem_Baumstamm_-_Leopold_Kanzler_gross_01.jpg');
             background-size: cover;
         }
 
@@ -33,10 +33,15 @@
 
         .controls2 {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .controls3 {
+            display: flex;
+            gap: 10px; /* Abstand zwischen den Elementen */
+            align-items: center; /* Vertikal zentrieren */
+            margin-bottom: 1rem;
         }
 
         .button-group {
@@ -69,14 +74,44 @@
             background-color: #ddd;
         }
 
-        .grid {
-            display: grid;
-            gap: 0;
-            margin-bottom: 1rem;
+        .grid-wrapper {
+            position: relative;
+            display: inline-block;
         }
 
+        .background {
+            position: absolute;
+            inset: 0;
+            background-color: white;
+            background-size: cover;
+            background-position: center;
+            filter: grayscale(100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .grid {
+            position: relative;
+            display: grid;
+            z-index: 1;
+            gap: 0;
+            margin-bottom: 0rem;
+        }
+
+        /*
+        .grid {
+            display: grid;
+
+            background-image: url('https://www.bund-nrw.de/fileadmin/nrw/bilder/Naturschutz/Biber/Biber_an_gefaelltem_Baumstamm_-_Leopold_Kanzler_gross_01.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+         */
+
         .cell.error {
-            background-color: #ff9a9a; /* schönes helles Rot */
+            background-color: rgba(255, 154, 154, 0.5);
             color: white;
             transition: background-color 0.3s ease; /* sanfte Animation */
         }
@@ -86,7 +121,7 @@
             height: 50px;
             border: 1px solid black;
             cursor: pointer;
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -96,7 +131,7 @@
         }
 
         .cell.marked {
-            background-color: dodgerblue;
+            background-color: rgba(30, 144, 255, 0.5);
             color: white;
         }
 
@@ -105,13 +140,13 @@
             height: 100%;
             border: none;
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 2.5rem;
             background: transparent;
         }
 
         .cell input:focus {
             outline: none;
-            background-color: #f0f0f0;
+            background-color: transparent;
         }
 
         .cell.ausgabe {
@@ -126,6 +161,8 @@
         .thick-bottom { border-bottom: 4px solid black !important; }
 
 
+
+
         pre {
             margin-top: 2rem;
             background: #f9f9f9;
@@ -137,16 +174,6 @@
             font-size: 0.9rem;
         }
 
-
-        #filledContainer {
-            display: flex;
-        }
-
-        #sudokuContainer {
-            display: flex;
-            gap: 2rem;
-            margin-top: 2rem;
-        }
 
         #rulesModal {
             display: none;
@@ -186,33 +213,6 @@
     </style>
 </head>
 <body>
-<h1>Sudoku Auswahl</h1>
-
-<div class="controls">
-    <div class="button-group">
-        <button id="grid4" onclick="setGridSize(4)">4x4</button>
-        <button id="grid6" onclick="setGridSize(6)">6x6</button>
-        <button id="grid9" onclick="setGridSize(9)">9x9</button>
-    </div>
-
-
-
-    <select id="modeSelector" onchange="changeMode()" style="display: none;">
-        <option value="mark">Felder markieren</option>
-        <option value="input">Zahlen eingeben</option>
-    </select>
-
-    <div>
-        <button id="markBtn" onclick="selectMode('mark')">Felder markieren</button>
-        <button id="inputBtn" onclick="selectMode('input')">Zahlen eingeben</button>
-    </div>
-
-
-
-
-    <button onclick="showSudokuRules()">Sudoku-Regeln anzeigen</button>
-</div>
-
 <div id="loadingOverlay" style="
     position: fixed;
     top: 0;
@@ -247,34 +247,66 @@
 
 </div>
 
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div class="controls">
+        <div class="button-group">
+            <button id="grid4" onclick="setGridSize(4)">4x4</button>
+            <button id="grid6" onclick="setGridSize(6)">6x6</button>
+            <button id="grid9" onclick="setGridSize(9)">9x9</button>
+        </div>
 
-<div id="grid" class="grid"></div>
+        <select id="modeSelector" onchange="changeMode()" style="display: none;">
+            <option value="mark">Felder markieren</option>
+            <option value="input">Zahlen eingeben</option>
+        </select>
 
-<div class="controls2">
-    <button onclick="createSudoku()">Sudoku erstellen</button>
-    <button onclick="resetGrid()">Zurücksetzen</button>
+        <div>
+            <button id="markBtn" onclick="selectMode('mark')">Felder markieren</button>
+            <button id="inputBtn" onclick="selectMode('input')">Zahlen eingeben</button>
+        </div>
+
+        <button onclick="showSudokuRules()">Sudoku-Regeln anzeigen</button>
+
+        <div class="controls3">
+            <button id="uploadBtn">Hintergrundbild hochladen</button>
+            <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+            <button id="removeBg">Hintergrundbild entfernen</button>
+        </div>
+
+        <div class="grid-wrapper">
+            <div class="background" id="background"></div>
+            <div class="grid" id="grid"></div>
+        </div>
+
+        <div class="controls2">
+            <button onclick="createSudoku()">Sudoku erstellen</button>
+            <button onclick="resetGrid()">Zurücksetzen</button>
+        </div>
+
+    </div>
+
+    <div>
+        <svg xmlns="http://www.w3.org/2000/svg"  id="partialSvg" style="display:none;">
+            <style>
+                text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }
+            </style>
+        </svg>
+
+        <div class="button-group">
+            <button id="downloadBtn" onclick="downloadSudoku(partialSvg)" style="display:none; margin-top: 1rem;">download partial Sudoku</button>
+            <button id="download filled sudoku" onclick="downloadSudoku(fullSvg)" style="display:none; margin-top: 1rem;">download filled Sudoku</button>
+        </div>
+    </div>
 </div>
 
 
-<svg xmlns="http://www.w3.org/2000/svg"  id="partialSvg" style="display:none;">
-    <style>
-        text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }
-    </style>
-</svg>
+
+
 <svg xmlns="http://www.w3.org/2000/svg" width="450" height="450" viewBox="0 0 450 450" id="fullSvg" style="display:none;">
     <style>
         text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }
     </style>
 </svg>
-
-
-
-<div id="sudokuContainer"></div>
-<div id="filledContainer" class = "grid"></div>
-<div class="button-group">
-    <button id="downloadBtn" onclick="downloadSudoku(partialSvg)" style="display:none; margin-top: 1rem;">download partial Sudoku</button>
-    <button id="download filled sudoku" onclick="downloadSudoku(fullSvg)" style="display:none; margin-top: 1rem;">download filled Sudoku</button>
-</div>
 
 
 <p id="changeCounter" style="
@@ -316,13 +348,45 @@
     document.getElementById("markBtn").classList.add('active-mode')
     const gridElement = document.getElementById("grid");
     const modeSelector = document.getElementById("modeSelector");
-    const sudokuContainer = document.getElementById("sudokuContainer");
-    const filledContainer = document.getElementById("filledContainer");
     const serverUrl = "http://localhost:8080";
     const { jsPDF } = window.jspdf;
     const { svg2pdf } = window.svg2pdf;
     const partialSvg = document.getElementById('partialSvg');
     const fullSvg = document.getElementById('fullSvg');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const imageUpload = document.getElementById('imageUpload');
+    const removeBtn = document.getElementById('removeBg');
+    const backgroundDiv = document.getElementById('background');
+
+
+    /*
+    Entfernt das Hintergrundbild vom Sudoku
+     */
+    removeBtn.addEventListener('click', () => {
+        backgroundDiv.style.backgroundImage = 'none';
+    });
+
+
+    uploadBtn.addEventListener('click', () => {
+        imageUpload.click();  // öffnet den Datei-Dialog
+    });
+
+    /*
+    stellt Feld für Upload zur Verfügung, um das Bild als Hintergrund zu benutzen
+     */
+    imageUpload.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            backgroundDiv.style.backgroundImage = `url('${e.target.result}')`;
+        };
+        reader.readAsDataURL(file);
+
+        event.target.value = '';
+    });
+
 
     function getBlockSize(size) {
         if (size === 4) return [2, 2];
@@ -358,7 +422,8 @@
                         document.querySelectorAll(".cell").forEach(cell => {
                             cell.classList.remove(`error`);
                         });
-                        const val = e.target.value.replace(/[^1-9]/g, '').slice(0, 1);
+                        const regex = new RegExp(`[^1-${currentSize}]`, 'g');
+                        const val = e.target.value.replace(regex, '').slice(0, 1);
                         e.target.value = val;
                         gridState[index] = val ? parseInt(val, 10) : 0;  // ← Convert to number
                         if (val){
@@ -368,7 +433,6 @@
                         }
                         updateChangeCounter();
                         dynamicErrors();
-                        updateStateDisplay();
                     });
                     cell.appendChild(input);
                 } else {
@@ -385,7 +449,6 @@
                         }
                         updateChangeCounter();
                         dynamicErrors();
-                        updateStateDisplay();
                     });
                 }
 
@@ -393,7 +456,7 @@
             }
         }
 
-        updateStateDisplay();
+
     }
 
     function dynamicErrors(){
@@ -488,9 +551,6 @@
         createGrid(currentSize);
     }
 
-    function updateStateDisplay() {
-        document.getElementById("stateDisplay").textContent = JSON.stringify(gridState, null, 2);
-    }
 
     /*
     Blendet die beiden Download-Button ein, immer dann wenn ein Sudoku generiert wurde
@@ -511,8 +571,6 @@
         partialSvg.style.display = "none";
         hideDownloadButton();
 
-
-
         const tupel = {
             size: currentSize,
             mode: markMode,
@@ -529,7 +587,6 @@
 
             console.log("Sudoku-Tupel:", tupel);
             document.getElementById('loadingOverlay').style.display = 'flex';
-            sudokuContainer.innerHTML = "";
             document.getElementById("downloadBtn").style.display = "none";
             const payload = {
                     data: gridState,
@@ -563,9 +620,6 @@
         });
 
             console.log("Sudoku-Tupel:", tupel);
-            sudokuContainer.innerHTML = "";
-
-            filledContainer.innerHTML = "";
             document.getElementById("downloadBtn").style.display = "none";
         }
 
