@@ -98,18 +98,6 @@
             margin-bottom: 0rem;
         }
 
-        /*
-        .grid {
-            display: grid;
-
-            background-image: url('https://www.bund-nrw.de/fileadmin/nrw/bilder/Naturschutz/Biber/Biber_an_gefaelltem_Baumstamm_-_Leopold_Kanzler_gross_01.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-         */
-
         .cell.error {
             background-color: rgba(255, 154, 154, 0.5);
             color: white;
@@ -357,6 +345,8 @@
     const imageUpload = document.getElementById('imageUpload');
     const removeBtn = document.getElementById('removeBg');
     const backgroundDiv = document.getElementById('background');
+    let hasBackgroundImage = false;
+    let imageURL;
 
 
     /*
@@ -364,6 +354,7 @@
      */
     removeBtn.addEventListener('click', () => {
         backgroundDiv.style.backgroundImage = 'none';
+        hasBackgroundImage = false;
     });
 
 
@@ -381,6 +372,8 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             backgroundDiv.style.backgroundImage = `url('${e.target.result}')`;
+            imageURL = e.target.result;
+            hasBackgroundImage = true;
         };
         reader.readAsDataURL(file);
 
@@ -846,35 +839,85 @@
         });
     }
 
+    /*
+    macht aus dem Hintergrundbild ein schwarz weiß Bild, damit im PDF später der Hintergrund auch schwarz weiß ist
+     */
+    function convertImageToGrayscale(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const avg = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                    data[i] = data[i + 1] = data[i + 2] = avg;
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+                resolve(canvas.toDataURL());
+            };
+            img.onerror = reject;
+            img.src = src;
+        });
+    }
+
     /*Zeichnet das partielle Sudoku als Vektorgraphik
     macht die markierten Felder grau
     unterscheidet zwischen voll und partiell
     Aktuell noch nur auf 9*9
      */
-    function renderSudoku(data, solution, svg) {
+    async function renderSudoku(data, solution, svg) {
         while (svg.childNodes.length > 1) {
             svg.removeChild(svg.lastChild);
         }
+
+        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        const pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+        pattern.setAttribute("id", "bgImage");
+        pattern.setAttribute("patternUnits", "userSpaceOnUse");
+        pattern.setAttribute("width", 50 * currentSize);
+        pattern.setAttribute("height", 50 * currentSize);
+
+        const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        const grayDataURL = await convertImageToGrayscale(imageURL);
+        image.setAttributeNS(null, "href", grayDataURL);
+        image.setAttribute("width", 50 * currentSize);
+        image.setAttribute("height", 50 * currentSize);
+        image.setAttribute("preserveAspectRatio", "xMidYMid slice");
+
+        pattern.appendChild(image);
+        defs.appendChild(pattern);
+        svg.appendChild(defs);
 
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
 
         rect.setAttribute('x', 0);
         rect.setAttribute('y', 0);
-        rect.setAttribute('width', 50*currentSize);  // Dynamische Breite
-        rect.setAttribute('height', 50*currentSize); // Dynamische Höhe
-        rect.setAttribute('fill', 'white');
-
-
+        rect.setAttribute('width', 50 * currentSize);  // Dynamische Breite
+        rect.setAttribute('height', 50 * currentSize); // Dynamische Höhe
+        if (hasBackgroundImage) {
+            rect.setAttribute("fill", "url(#bgImage)");
+        } else {
+            rect.setAttribute("fill", "white");
+        }
 
 
         svg.appendChild(rect);
 
 
-        for(let row=0; row<currentSize; row++) {
-            for(let col=0; col<currentSize; col++) {
-                let x = col*50;
-                let y = row*50;
-                let index = row* currentSize + col;
+        for (let row = 0; row < currentSize; row++) {
+            for (let col = 0; col < currentSize; col++) {
+                let x = col * 50;
+                let y = row * 50;
+                let index = row * currentSize + col;
 
                 const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
                 rect.setAttribute("x", x);
@@ -882,17 +925,17 @@
                 rect.setAttribute("width", 50);
                 rect.setAttribute("height", 50);
                 rect.setAttribute("class", "cell");
-                rect.setAttribute("fill", "white");
+                rect.setAttribute("fill", "rgba(255, 255, 255, 0.6)");
                 rect.setAttribute("stroke", "black");
                 rect.setAttribute("stroke-width", "1");
 
-                if(data[index] !== 0){
-                    rect.setAttribute("fill", "lightgrey");
+                if (data[index] !== 0 && !hasBackgroundImage) {
+                    rect.setAttribute("fill", "rgba(128, 128, 128, 0.3)");
                 }
                 svg.appendChild(rect);
 
 
-                if(data[index] !== 0 || svg === fullSvg){
+                if (data[index] !== 0 || svg === fullSvg) {
                     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
 
                     text.setAttribute("x", x + 25);
@@ -909,29 +952,29 @@
         }
         let lines = [];
 
-        if(currentSize === 9){
+        if (currentSize === 9) {
             lines = [
-                {x1:0,y1:150,x2:450,y2:150},
-                {x1:0,y1:300,x2:450,y2:300},
-                {x1:150,y1:0,x2:150,y2:450},
-                {x1:300,y1:0,x2:300,y2:450},
+                {x1: 0, y1: 150, x2: 450, y2: 150},
+                {x1: 0, y1: 300, x2: 450, y2: 300},
+                {x1: 150, y1: 0, x2: 150, y2: 450},
+                {x1: 300, y1: 0, x2: 300, y2: 450},
             ];
             svg.setAttribute('viewBox', `0 0 450 450`);
             svg.setAttribute('width', '450');
             svg.setAttribute('height', '450');
-        }else if(currentSize === 6){
+        } else if (currentSize === 6) {
             lines = [
-                {x1:0,y1:100,x2:300,y2:100},
-                {x1:0,y1:200,x2:300,y2:200},
-                {x1:150,y1:0,x2:150,y2:300},
+                {x1: 0, y1: 100, x2: 300, y2: 100},
+                {x1: 0, y1: 200, x2: 300, y2: 200},
+                {x1: 150, y1: 0, x2: 150, y2: 300},
             ];
             svg.setAttribute('viewBox', `0 0 300 300`);
             svg.setAttribute('width', '300');
             svg.setAttribute('height', '300');
-        }else{
+        } else {
             lines = [
-                {x1:0,y1:100,x2:200,y2:100},
-                {x1:100,y1:0,x2:100,y2:200},
+                {x1: 0, y1: 100, x2: 200, y2: 100},
+                {x1: 100, y1: 0, x2: 100, y2: 200},
             ];
             svg.setAttribute('viewBox', `0 0 200 200`);
             svg.setAttribute('width', '200');
@@ -952,8 +995,8 @@
         const border = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         border.setAttribute("x", 0);
         border.setAttribute("y", 0);
-        border.setAttribute("width", 50*currentSize);
-        border.setAttribute("height", 50* currentSize);
+        border.setAttribute("width", 50 * currentSize);
+        border.setAttribute("height", 50 * currentSize);
         border.setAttribute("fill", "none");
         border.setAttribute("stroke", "black");
         border.setAttribute("stroke-width", 8);   // noch dickerer Rahmen außen
