@@ -28,7 +28,6 @@
             flex-direction: column;
             align-items: center;
             gap: 1rem;
-            margin-bottom: 2rem;
         }
 
         .controls2 {
@@ -253,14 +252,30 @@
             <button id="inputBtn" onclick="selectMode('input')">Zahlen eingeben</button>
         </div>
 
-        <button onclick="showSudokuRules()">Sudoku-Regeln anzeigen</button>
-
         <div class="controls3">
             <button id="uploadBtn">Hintergrundbild hochladen</button>
             <input type="file" id="imageUpload" accept="image/*" style="display:none;">
             <button id="removeBg">Hintergrundbild entfernen</button>
         </div>
 
+    </div>
+
+    <div class="controls">
+        <button onclick="showSudokuRules()">Sudoku-Regeln anzeigen</button>
+
+        <p id="changeCounter" style="
+    background: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: inline-block;
+">
+            Markierte Felder: 0
+        </p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div class="controls">
         <div class="grid-wrapper">
             <div class="background" id="background"></div>
             <div class="grid" id="grid"></div>
@@ -273,7 +288,7 @@
 
     </div>
 
-    <div>
+    <div class="controls">
         <svg xmlns="http://www.w3.org/2000/svg"  id="partialSvg" style="display:none;">
             <style>
                 text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }
@@ -290,6 +305,8 @@
 
 
 
+
+
 <svg xmlns="http://www.w3.org/2000/svg" width="450" height="450" viewBox="0 0 450 450" id="fullSvg" style="display:none;">
     <style>
         text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }
@@ -297,14 +314,7 @@
 </svg>
 
 
-<p id="changeCounter" style="
-    background: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    display: inline-block;
-">
-    Markierte Felder: 0
-</p>
+
 
 <div id="errorOutput" style="color:red; margin-top:10px;"></div>
 
@@ -879,39 +889,44 @@
             svg.removeChild(svg.lastChild);
         }
 
-        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-        const pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
-        pattern.setAttribute("id", "bgImage");
-        pattern.setAttribute("patternUnits", "userSpaceOnUse");
-        pattern.setAttribute("width", 50 * currentSize);
-        pattern.setAttribute("height", 50 * currentSize);
+        if(hasBackgroundImage){
+            const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+            const pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+            pattern.setAttribute("id", "bgImage");
+            pattern.setAttribute("patternUnits", "userSpaceOnUse");
+            pattern.setAttribute("width", 50 * currentSize);
+            pattern.setAttribute("height", 50 * currentSize);
 
-        const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
-        const grayDataURL = await convertImageToGrayscale(imageURL);
-        image.setAttributeNS(null, "href", grayDataURL);
-        image.setAttribute("width", 50 * currentSize);
-        image.setAttribute("height", 50 * currentSize);
-        image.setAttribute("preserveAspectRatio", "xMidYMid slice");
+            const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
+            const grayDataURL = await convertImageToGrayscale(imageURL);
+            image.setAttributeNS(null, "href", grayDataURL);
+            image.setAttribute("width", 50 * currentSize);
+            image.setAttribute("height", 50 * currentSize);
+            image.setAttribute("preserveAspectRatio", "xMidYMid slice");
 
-        pattern.appendChild(image);
-        defs.appendChild(pattern);
-        svg.appendChild(defs);
-
+            pattern.appendChild(image);
+            defs.appendChild(pattern);
+            svg.appendChild(defs);
+        }
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
 
         rect.setAttribute('x', 0);
         rect.setAttribute('y', 0);
-        rect.setAttribute('width', 50 * currentSize);  // Dynamische Breite
-        rect.setAttribute('height', 50 * currentSize); // Dynamische Höhe
-        if (hasBackgroundImage) {
-            rect.setAttribute("fill", "url(#bgImage)");
-        } else {
-            rect.setAttribute("fill", "white");
-        }
-
-
+        rect.setAttribute('width', 50 * currentSize);
+        rect.setAttribute('height', 50 * currentSize);
+        rect.setAttribute("fill", "white");
         svg.appendChild(rect);
 
+        if (hasBackgroundImage) {
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+
+            rect.setAttribute('x', 0);
+            rect.setAttribute('y', 0);
+            rect.setAttribute('width', 50 * currentSize);
+            rect.setAttribute('height', 50 * currentSize);
+            rect.setAttribute("fill", "url(#bgImage)");
+            svg.appendChild(rect);
+        }
 
         for (let row = 0; row < currentSize; row++) {
             for (let col = 0; col < currentSize; col++) {
@@ -925,7 +940,7 @@
                 rect.setAttribute("width", 50);
                 rect.setAttribute("height", 50);
                 rect.setAttribute("class", "cell");
-                rect.setAttribute("fill", "rgba(255, 255, 255, 0.6)");
+                rect.setAttribute("fill", "rgba(255, 255, 255, 0.5)");
                 rect.setAttribute("stroke", "black");
                 rect.setAttribute("stroke-width", "1");
 
