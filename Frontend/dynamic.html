@@ -574,6 +574,7 @@
         partialSvg.style.display = "none";
         hideDownloadButton();
 
+
         const tupel = {
             size: currentSize,
             mode: markMode,
@@ -587,6 +588,7 @@
         if (errors.length !== 0){
             alert("markiere Elemente bis nichts mehr rot ist")
         }else {
+            document.getElementById('loadingOverlay').style.display = 'flex';
 
             console.log("Sudoku-Tupel:", tupel);
             document.getElementById('loadingOverlay').style.display = 'flex';
