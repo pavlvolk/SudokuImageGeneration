@@ -6,3 +6,6 @@
 !Cargo.toml
 !.gitignore
 !/data/permuted_10_million_cut_trimmed.txt
+!/data/generate_cut_80.txt
+!/data/sudoku_solutions_4x4.txt
+!/data/sudoku_solutions_6x6.txt

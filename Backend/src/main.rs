@@ -35,6 +35,7 @@ use crate::constants::SOLUTION;
 use crate::constants::TEST;
 use crate::testen_der_neuen_loesung::csv_tests_compare;
 use crate::generate_picture::generate_picture;
+use itertools::Itertools;
 
 //Input structure
 #[derive(Deserialize)]
@@ -69,6 +70,7 @@ async fn main() {
         "Option 4: Neue Tests",
         "Option 5: Start Server",
         "Option 6: Use Picture",
+        "Option 7: Test 6 and 4"
     ];
 
     let selection = Select::with_theme(&ColorfulTheme::default())
@@ -85,6 +87,7 @@ async fn main() {
         3 => option_4(),
         4 => option_5().await.unwrap(),
         5 => option_6(),
+        6 => option_7(),
         _ => println!("Ungültige Auswahl."),
     }
 }
@@ -106,14 +109,16 @@ fn option_1() {
     let hints:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
     let mut s = Sudoku::new(9);
     let hints1:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
-    let transformed: Vec<usize> = hints1
+    let mut transformed: Vec<usize> = hints1
         .into_iter()
         .map(|x| if x == 0 { 0 } else { 1 })
         .collect();
     let count_ones = transformed.iter().filter(|&&x| x != 0).count();
     println!("Anzahl der 1s: {}", count_ones);
-    //let t1: Vec<_> = h.into_iter().map(|x| if x == 0 { 0 } else { 1 }).collect();
-    //println!("{:?}", calculate_solution(&hints, &mut s, true).unwrap());
+    transformed[9] = 10;
+    transformed[19] = 2;
+    transformed[31] = 6;
+
     println!("{:?}", calculate_solution(&transformed, &mut s, false).unwrap());
     //println!("{:?}", calculate_solution(&t1, &mut s, false).unwrap());
 }
@@ -152,7 +157,7 @@ fn option_3() {
         .collect();
     let count_ones = transformed.iter().filter(|&&x| x != 0).count();
     println!("Anzahl der 1s: {}", count_ones);
-    println!("{:?}", calculation::thread_calculation(&transformed));
+    //println!("{:?}", calculation::thread_calculation(&transformed));
 
     println!("{}", Instant::now().duration_since(start).as_millis());
 }
@@ -177,9 +182,11 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
         println!("{:?}", input.data);
     }
     else if input.length == 36 {
+        println!("{:?}", input.data);
         result = calculate_solution(&input.data, &mut Sudoku::new(6), !input.markingmode);
     }
     else if input.length == 16 {
+        println!("{:?}", input.data);
         result = calculate_solution(&input.data, &mut Sudoku::new(4), !input.markingmode);
     }
     else{
@@ -219,4 +226,27 @@ async fn option_5() -> std::io::Result<()> {
 
 fn option_6(){
     generate_picture();
+}
+
+fn option_7(){
+    let mut s = Sudoku::new(6);
+    for combo in (0..36).combinations(6) {
+        let mut v = vec![0; 36];
+        for &i in &combo {
+            v[i] = 1;
+        }
+        match calculate_solution(&v, &mut s, false) {
+            Ok(Some(solution)) => {
+                println!("Lösung gefunden für Kombination: {:?}", v);
+                println!("→ Lösung: {:?}", solution);
+                break;
+            },
+            Ok(None) => {
+                // Keine Lösung für diese Kombination
+            },
+            Err(e) => {
+                eprintln!("Fehler bei Kombination {:?}: {}", v, e);
+            },
+        }
+    }
 }
