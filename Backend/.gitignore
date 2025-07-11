@@ -5,3 +5,4 @@
 !Cargo.lock
 !Cargo.toml
 !.gitignore
+!/data/permuted_10_million_cut_trimmed.txt
