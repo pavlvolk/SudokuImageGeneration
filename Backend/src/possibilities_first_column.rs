@@ -50,12 +50,7 @@ pub fn possibilities_first_column_six() -> Vec<Vec<usize>> {
     results.push(vec![6, 2, 3, 4, 5]);
     results.push(vec![6, 2, 4, 3, 5]);
     results.push(vec![6, 2, 5, 3, 4]);
-
-    for result in results.iter() {
-        println!("{:?}", result);
-    }
-    println!("");
-    println!("Belegungen für sechs: {}", results.len());
+    
     results
 }
 /*
