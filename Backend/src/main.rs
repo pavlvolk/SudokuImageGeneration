@@ -28,7 +28,7 @@ use serde::{Deserialize, Serialize};
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::io::{self, Write};
 use crate::apply_permutations::apply_reverse_permutations;
-use crate::difficulty::serate;
+use crate::difficulty::{apply_claiming_pair, initial_candidates, rate_difficulty};
 
 //Input structure
 #[derive(Deserialize)]
@@ -260,22 +260,45 @@ fn option_6(){
     //println!("{:?}", difficulty::get_all_units(9));
 
     let mut board2 = vec![
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![4, 9, 2, 0, 5, 6, 1, 0, 8],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![2, 1, 8, 0, 3, 5, 6, 0, 4],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0; 9],
-        vec![0; 9],
+        8, 3, 2, 0, 0, 7, 0, 9, 0,
+        0, 0, 5, 0, 0, 0, 8, 0, 2,
+        1, 0, 0, 0, 0, 4, 0, 0, 7,
+
+        0, 0, 0, 0, 0, 1, 9, 0, 0,
+        9, 0, 0, 0, 7, 2, 1, 0, 5,
+        6, 0, 3, 0, 0, 9, 7, 0, 8,
+
+        0, 0, 0, 4, 1, 5, 2, 6, 0,
+        5, 6, 0, 0, 2, 0, 4, 7, 0,
+        4, 0, 0, 0, 0, 3, 5, 8, 1,
     ];
     
     let mut board3 = vec![
-        vec![1, 0, 0, 0],
-        vec![2, 0, 0, 0],
-        vec![3, 0, 0, 0],
-        vec![0, 0, 0, 0],
+        2, 0, 3, 4, 0, 0, 0, 0, 5,
+        8, 0, 9, 1, 6, 0, 7, 0, 4,
+        0, 0, 6, 0, 3, 0, 0, 1, 9,
+
+        7, 0, 2, 0, 0, 3, 0, 6, 0,
+        0, 0, 8, 2, 5, 0, 0, 0, 0,
+        0, 0, 1, 6, 0, 7, 0, 0, 2,
+
+        0, 0, 7, 0, 0, 5, 9, 2, 6,
+        9, 3, 0, 7, 2, 0, 0, 0, 0,
+        6, 0, 0, 0, 9, 0, 4, 7, 0,
+    ];
+
+    let mut board5 = vec![
+        0, 0, 8, 0, 0, 0, 0, 0, 0,
+        0, 0, 9, 8, 0, 0, 5, 4, 3,
+        0, 0, 4, 2, 0, 6, 0, 9, 8,
+
+        0, 0, 0, 4, 0, 0, 0, 0, 0,
+        0, 4, 3, 9, 1, 5, 0, 8, 6,
+        7, 0, 1, 0, 0, 0, 4, 0, 0,
+
+        9, 0, 0, 0, 0, 0, 8, 0, 5,
+        0, 3, 0, 0, 0, 0, 0, 6, 0,
+        5, 0, 0, 1, 3, 0, 0, 0, 0,
     ];
 
     let mut board4 = vec![
@@ -286,10 +309,23 @@ fn option_6(){
         vec![0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0],
     ];
-    
-    
-    
-    println!("{:?}", serate(&mut board2));
-    println!("{:?}", serate(&mut board3));
-    println!("{:?}", serate(&mut board4));
+
+    let mut board6 = vec![
+        vec![6, 5, 2, 0, 0, 0, 0, 3, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 4],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+
+        vec![0, 0, 0, 0, 0, 0, 4, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+
+    let mut candidates = initial_candidates(&board6, 9);
+    apply_claiming_pair(&mut candidates, &mut board6);
+    println!("{:?}", candidates);
+    println!("{:?}", rate_difficulty(board5));
 }

@@ -1,25 +1,73 @@
 use std::collections::{HashMap, HashSet};
 
-fn rate_difficulty(list: &Vec<i32>, size: i32) -> f32{
-    return 0.0
+pub fn rate_difficulty(list: Vec<i32>) -> f64{
+    let mut list_2d = list.chunks(list.len().isqrt()).map(|row| row.to_vec()).collect::<Vec<Vec<i32>>>();
+    serate(&mut list_2d)
 }
 
-pub fn serate(list: &mut Vec<Vec<i32>>) -> f64{
+fn serate(list: &mut Vec<Vec<i32>>) -> f64{
     let board_size = list.len();
     let hidden_single_d = 1.2;
     let naked_single_d = 2.3;
     let pointing_d = 2.6;
     let claiming_d = 2.8;
     let x_wing_d = 4.0;
-    let swordfish_d = 5.0;
+    let mut difficulty: f64 = 0.0;
     let mut candidates = initial_candidates(&list, board_size as i32);
-    //println!("{:?}", naked_single(&mut candidates, list));
-    //println!("{:?}", hidden_single(&mut candidates, board_size as i32, list));
-    //println!("{:?}", apply_pointing_pair(&mut candidates, list));
-    //println!("{:?}", apply_claiming_pair(&mut candidates, list));
-    println!("{:?}", apply_x_wing(&mut candidates, list));
-    println!("{:?}", candidates);
-    return 0.0;
+    display_candidates(&candidates);
+    loop{
+        println!("Candidates: {:?}", list);
+        display_candidates(&candidates);
+        compute_candidates(&mut candidates, board_size as i32);
+        let mut solved = true;
+        for (_, vals) in candidates.iter(){
+            if vals.len() != 1{
+                solved = false;
+            }
+        }
+        if solved{
+            display_candidates(&candidates);
+            return difficulty;
+        }
+        compute_candidates(&mut candidates, board_size as i32);
+        println!("Naked: {:?}", list);
+        display_candidates(&candidates);
+        if naked_single(&mut candidates, list) {
+           difficulty = difficulty.max(naked_single_d);
+            continue;
+        }
+        compute_candidates(&mut candidates, board_size as i32);
+        println!("Hidden: {:?}", list);
+        display_candidates(&candidates);
+        if hidden_single(&mut candidates, board_size as i32, list){
+            difficulty = difficulty.max(hidden_single_d);
+            continue;
+        }
+        compute_candidates(&mut candidates, board_size as i32);
+        println!("Pointing: {:?}", list);
+        display_candidates(&candidates);
+        if apply_pointing_pair(&mut candidates, list){
+            difficulty = difficulty.max(pointing_d);
+            continue;
+        }
+        compute_candidates(&mut candidates, board_size as i32);
+        println!("Claiming: {:?}", list);
+        display_candidates(&candidates);
+        if apply_claiming_pair(&mut candidates, list){
+            difficulty = difficulty.max(claiming_d);
+            continue;
+        }
+        compute_candidates(&mut candidates, board_size as i32);
+        println!("X: {:?}", list);
+        display_candidates(&candidates);
+        if apply_x_wing(&mut candidates, list){
+            difficulty = difficulty.max(x_wing_d);
+            continue;
+        }
+        println!("{:?}", list);
+        return 5.0
+    }
+    5.0
 }
 
 pub fn initial_candidates(list: &Vec<Vec<i32>>, board_size: i32) -> HashMap<(i32, i32), Vec<i32>>{
@@ -46,11 +94,11 @@ pub fn initial_candidates(list: &Vec<Vec<i32>>, board_size: i32) -> HashMap<(i32
                 let val = list[r as usize][c as usize];
                 for inner_r in 0..board_size {
                     if let Some(cell) = candidates.get_mut(&(inner_r,c)){
-                        println!("{}", list[inner_r as usize][c as usize]);
+                        //println!("{}", list[inner_r as usize][c as usize]);
                         if cell.contains(&val) && r != inner_r && list[inner_r as usize][c as usize] == 0{
                             let index = cell.iter().position(|n| *n == val).unwrap();
                             cell.remove(index);
-                            println!("{} {} {}", inner_r, c, val)
+                            //println!("{} {} {}", inner_r, c, val)
                         }
                     }
                 }
@@ -59,7 +107,7 @@ pub fn initial_candidates(list: &Vec<Vec<i32>>, board_size: i32) -> HashMap<(i32
                         if cell.contains(&(val)) && c != inner_c && list[r as usize][inner_c as usize] == 0{
                             let index = cell.iter().position(|n| *n == val).unwrap();
                             cell.remove(index);
-                            println!("{} {} {}", r, inner_c, val)
+                            //println!("{} {} {}", r, inner_c, val)
                         }
                     }
                 }
@@ -82,7 +130,107 @@ pub fn initial_candidates(list: &Vec<Vec<i32>>, board_size: i32) -> HashMap<(i32
     candidates
 }
 
-pub fn get_all_units(board_size: i32) -> Vec<Vec<(i32, i32)>> {
+pub fn compute_candidates(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board_size: i32) -> &mut HashMap<(i32, i32), Vec<i32>> {
+    let vertical_box_size = board_size.isqrt();
+    let mut horizontal_box_size = vertical_box_size;
+    if board_size == 6{
+        horizontal_box_size += 1;
+    }
+
+    for r in 0..board_size {
+        for c in 0..board_size {
+            if candidates.get(&(r, c)).unwrap().len() == 1 {
+                if let Some(vals) = candidates.get(&(r, c)) {
+                    let val = vals[0];
+                    for inner_r in 0..board_size {
+                        if let Some(cell) = candidates.get_mut(&(inner_r, c)) {
+                            //println!("{}", list[inner_r as usize][c as usize]);
+                            if cell.contains(&val) && r != inner_r /*&& candidates.get(&(inner_r, c)).unwrap().len() != 1*/{
+                                let index = cell.iter().position(|n| *n == val).unwrap();
+                                cell.remove(index);
+                                //println!("{} {} {}", inner_r, c, val)
+                            }
+                        }
+                    }
+                    for inner_c in 0..board_size {
+                        if let Some(cell) = candidates.get_mut(&(r, inner_c)) {
+                            if cell.contains(&(val)) && c != inner_c /*&& candidates.get(&(r, inner_c)).unwrap().len() != 1*/{
+                                let index = cell.iter().position(|n| *n == val).unwrap();
+                                cell.remove(index);
+                                //println!("{} {} {}", r, inner_c, val)
+                            }
+                        }
+                    }
+                    let block_corner_r = (r / vertical_box_size) * vertical_box_size;
+                    let block_corner_c = (c / horizontal_box_size) * horizontal_box_size;
+                    for br in block_corner_r..block_corner_r + vertical_box_size {
+                        for bc in block_corner_c..block_corner_c + horizontal_box_size {
+                            if let Some(cell) = candidates.get_mut(&(br, bc)) {
+                                if cell.contains(&val) && r != br && c != bc /*&& candidates.get(&(br, bc)).unwrap().len() != 1*/{
+                                    let index = cell.iter().position(|n| *n == val).unwrap();
+                                    cell.remove(index);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    candidates
+}
+
+fn new_compute_candidates(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board_size: i32) {
+    let vertical_box_size = board_size.isqrt();
+    let mut horizontal_box_size = vertical_box_size;
+    if board_size == 6 {
+        horizontal_box_size += 1;
+    }
+
+    // Step 1: Collect all known values
+    let solved_cells: Vec<((i32, i32), i32)> = candidates.iter()
+        .filter_map(|(&(r, c), vals)| if vals.len() == 1 {
+            Some(((r, c), vals[0]))
+        } else {
+            None
+        })
+        .collect();
+
+    // Step 2: Remove each known value from peers
+    for ((r, c), val) in solved_cells {
+        // Remove from same column
+        for inner_r in 0..board_size {
+            if inner_r != r {
+                if let Some(cell) = candidates.get_mut(&(inner_r, c)) {
+                    cell.retain(|&x| x != val);
+                }
+            }
+        }
+        // Remove from same row
+        for inner_c in 0..board_size {
+            if inner_c != c {
+                if let Some(cell) = candidates.get_mut(&(r, inner_c)) {
+                    cell.retain(|&x| x != val);
+                }
+            }
+        }
+        // Remove from same box
+        let box_corner_r = (r / vertical_box_size) * vertical_box_size;
+        let box_corner_c = (c / horizontal_box_size) * horizontal_box_size;
+
+        for br in box_corner_r..box_corner_r + vertical_box_size {
+            for bc in box_corner_c..box_corner_c + horizontal_box_size {
+                if br != r || bc != c {
+                    if let Some(cell) = candidates.get_mut(&(br, bc)) {
+                        cell.retain(|&x| x != val);
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn get_all_units(board_size: i32) -> Vec<Vec<(i32, i32)>> {
     let mut row_units: Vec<Vec<(i32, i32)>> = Vec::new();
     let mut col_units: Vec<Vec<(i32, i32)>> = Vec::new();
     let mut subgrid_units: Vec<Vec<(i32, i32)>> = Vec::new();
@@ -140,11 +288,14 @@ fn hidden_single(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board_size: i32
                 let (r,c) = cells[0];
                 //fix hopefully
                 if list[r as usize][c as usize] != 0{
-                    break;
+                    continue;
                 }
-                candidates.insert((r, c), vec![val]);
-                list[r as usize][c as usize] = val; //TODO unnecessary
-                println!("{:?} {:?}", (r, c), val);
+                if let Some(cand) = candidates.get_mut(&(r,c)){
+                    *cand = vec![val];
+                    list[r as usize][c as usize] = val;
+                }
+                //list[r as usize][c as usize] = val;
+                //println!("{:?} {:?}", (r, c), val);
                 changed = true;
             }
         }
@@ -157,10 +308,11 @@ fn naked_single(candidates: &mut HashMap<(i32, i32), Vec<i32>>, list: &mut Vec<V
     let mut changed = false;
     for ((r, c), val) in candidates.clone(){
         if val.len() == 1 && list[r as usize][c as usize] == 0{
-            let mut _cand = candidates.get_mut(&(r, c)).unwrap();
-            _cand = &mut vec![val[0]];
-            list[r as usize][c as usize] = val[0];
-            println!("{:?}", candidates.get(&(r, c)).unwrap());
+            if let Some(cand) = candidates.get_mut(&(r,c)){
+                *cand = vec![val[0]];
+                list[r as usize][c as usize] = val[0];
+            }
+            //list[r as usize][c as usize] = val[0];
             changed = true;
         }
     }
@@ -219,7 +371,7 @@ fn apply_pointing_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &m
                                 if c.contains(&val) {
                                     let index = c.iter().position(|n| *n == val).unwrap();
                                     c.remove(index);
-                                    println!("{:?}", c);
+                                    //println!("{:?}", c);
                                     changed = true;
                                 }
                             }
@@ -232,7 +384,7 @@ fn apply_pointing_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &m
     changed
 }
 
-fn apply_claiming_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &mut Vec<Vec<i32>>) -> bool {
+pub fn apply_claiming_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &mut Vec<Vec<i32>>) -> bool {
     let vertical_box_size = board.len().isqrt();
     let mut horizontal_box_size = vertical_box_size;
     if board.len() == 6{
@@ -245,24 +397,23 @@ fn apply_claiming_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &m
             for c in 0..board.len(){
                 if let Some(cell_cands) = candidates.get(&(r as i32, c as i32)){
                     if cell_cands.contains(&(val as i32)){
-                        if !boxes.contains(&((c % horizontal_box_size) as i32)){
-                            boxes.push((c % horizontal_box_size) as i32)
+                        if !boxes.contains(&((c / horizontal_box_size) as i32)){
+                            boxes.push((c / horizontal_box_size) as i32)
                         }
                     }
                 }
             }
             if boxes.len() == 1{
                 let c = *boxes.iter().next().unwrap() as usize;
-                let box_corner_r = r%(vertical_box_size);
+                let box_corner_r =  (r / vertical_box_size) * vertical_box_size;
                 let box_corner_c = c*horizontal_box_size;
                 for br in box_corner_r..box_corner_r + vertical_box_size {
                     for bc in box_corner_c..box_corner_c + horizontal_box_size {
-                        if (box_corner_r + br) != r {
-                            if let Some(cell) = candidates.get_mut(&((box_corner_r + br) as i32, (box_corner_c + bc) as i32)){ //TODO hier nur br, bc??
-                                if cell.contains(&(val as i32)) {
-                                    let index = cell.iter().position(|n| *n == val as i32).unwrap();
-                                    cell.remove(index);
-                                    println!("{:?} {:?}", (box_corner_r + br, box_corner_c + bc), val);
+                        if br != r {
+                            if let Some(cell) = candidates.get_mut(&(br as i32, bc as i32)){
+                                if cell.contains(&(val as i32)) && cell.len() > 1{
+                                    cell.retain(|&x| x != val as i32);
+                                    //println!("{:?} {:?}", (box_corner_r + br, box_corner_c + bc), val);
                                     changed = true;
                                 }
                             }
@@ -274,13 +425,13 @@ fn apply_claiming_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &m
     }
     
     for c in 0..board.len(){
-        for val in 0..=board.len(){
+        for val in 1..=board.len(){
             let mut boxes:Vec<i32> = vec![];
             for r in 0..board.len(){
                 if let Some(cell_cands) = candidates.get(&(r as i32, c as i32)){
                     if cell_cands.contains(&(val as i32)){
-                        if !boxes.contains(&((r % (vertical_box_size)) as i32)){
-                            boxes.push((r % (vertical_box_size)) as i32)
+                        if !boxes.contains(&((r / (vertical_box_size)) as i32)){
+                            boxes.push((r / (vertical_box_size)) as i32)
                         }
                     }
                 }
@@ -289,15 +440,14 @@ fn apply_claiming_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &m
             if boxes.len() == 1{
                 let r = *boxes.iter().next().unwrap() as usize;
                 let box_corner_r = r*(vertical_box_size);
-                let box_corner_c = c%(horizontal_box_size);
+                let box_corner_c = (c / horizontal_box_size) * horizontal_box_size;
                 for br in box_corner_r..box_corner_r + vertical_box_size {
                     for bc in box_corner_c..box_corner_c + horizontal_box_size {
-                        if (box_corner_c + bc) != c {
-                            if let Some(cell) = candidates.get_mut(&((box_corner_r + br) as i32, (box_corner_c + bc) as i32)){
-                                if cell.contains(&(val as i32)) {
-                                    let index = cell.iter().position(|n| *n == val as i32).unwrap();
-                                    cell.remove(index);
-                                    println!("{:?} {:?}", (box_corner_r + br, box_corner_c + bc), val);
+                        if bc != c {
+                            if let Some(cell) = candidates.get_mut(&(br as i32, bc as i32)){
+                                if cell.contains(&(val as i32)) && cell.len() > 1{
+                                    cell.retain(|&x| x != val as i32);
+                                    //println!("{:?} {:?}", (box_corner_r + br, box_corner_c + bc), val);
                                     changed = true;
                                 }
                             }
@@ -332,7 +482,7 @@ fn apply_x_wing(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &mut Vec<
                         if r != r1 && r != r2 {
                             for &c in cols{
                                 if let Some(cell_cands) = candidates.get_mut(&(r as i32, c as i32)){
-                                    if cell_cands.contains(&(val as i32)){
+                                    if cell_cands.contains(&(val as i32)) && cell_cands.len() != 1 && board[r][c] == 0 {
                                         let index = cell_cands.iter().position(|n| *n == val as i32).unwrap();
                                         cell_cands.remove(index);
                                         changed = true;
@@ -346,4 +496,39 @@ fn apply_x_wing(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &mut Vec<
         }
     }
     changed
+}
+
+fn display_candidates(candidates: &HashMap<(i32, i32), Vec<i32>>) {
+    let size = 9;
+    let box_size = 3;
+
+    for r in 0..size {
+        if r % box_size == 0 && r != 0 {
+            println!("{}", "-".repeat((box_size * 8) + 2));
+        }
+
+        for c in 0..size {
+            if c % box_size == 0 && c != 0 {
+                print!("| ");
+            }
+            let empty_vec: Vec<i32> = Vec::new();
+            let val = candidates.get(&(r as i32, c as i32)).unwrap_or(&empty_vec);
+            if val.len() == 1 {
+                // Filled cell
+                print!("{:3}     ", val[0]);
+            } else if val.is_empty() {
+                // Invalid cell
+                print!(" .      ");
+            } else {
+                // Display candidates like 123
+                let mut val_str = val.iter().map(|v| v.to_string()).collect::<Vec<_>>().join("");
+                if val_str.len() > 6 {
+                    val_str.truncate(6); // trim for neatness
+                    val_str.push('+');
+                }
+                print!("{:<7}", val_str);
+            }
+        }
+        println!();
+    }
 }
