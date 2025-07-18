@@ -15,7 +15,7 @@ pub fn serate(list: &mut Vec<Vec<i32>>) -> f64{
     let mut candidates = initial_candidates(&list, board_size as i32);
     //println!("{:?}", naked_single(&mut candidates, list));
     //println!("{:?}", hidden_single(&mut candidates, board_size as i32, list));
-    //println!("{:?}", apply_pointing_pair(&mut candidates, list));
+    println!("{:?}", apply_pointing_pair(&mut candidates, list));
     //println!("{:?}", apply_claiming_pair(&mut candidates, list));
     println!("{:?}", candidates);
     return 0.0;
@@ -81,7 +81,7 @@ pub fn initial_candidates(list: &Vec<Vec<i32>>, board_size: i32) -> HashMap<(i32
     candidates
 }
 
-pub fn get_all_units(board_size: i32) -> Vec<Vec<Vec<(i32, i32)>>> {
+pub fn get_all_units(board_size: i32) -> Vec<Vec<(i32, i32)>> {
     let mut row_units: Vec<Vec<(i32, i32)>> = Vec::new();
     let mut col_units: Vec<Vec<(i32, i32)>> = Vec::new();
     let mut subgrid_units: Vec<Vec<(i32, i32)>> = Vec::new();
@@ -119,54 +119,51 @@ pub fn get_all_units(board_size: i32) -> Vec<Vec<Vec<(i32, i32)>>> {
         }
     }
 
-
-    let mut hm =Vec::new();
-    hm.push(row_units);
-    hm.push(col_units);
-    hm.push(subgrid_units);
-    hm
+    row_units.append(&mut col_units);
+    row_units.append(&mut subgrid_units);
+    row_units
 }
 
 fn hidden_single(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board_size: i32, list: &mut Vec<Vec<i32>>) -> bool{
-    let unit_types = get_all_units(board_size);
-    for units in unit_types {
-        for unit in units{
-            let mut count:HashMap<i32, Vec<(i32, i32)>> = HashMap::new();
-            for (r, c) in unit{
-                for val in candidates.get(&(r,c)).unwrap(){
-                    count.entry(*val).or_insert(vec![]).push((r, c));
-                }
+    let units = get_all_units(board_size);
+    let mut changed = false;
+    for unit in units{
+        let mut count:HashMap<i32, Vec<(i32, i32)>> = HashMap::new();
+        for (r, c) in unit{
+            for val in candidates.get(&(r,c)).unwrap(){
+                count.entry(*val).or_insert(vec![]).push((r, c));
             }
-            for (val, cells) in count{
-                if cells.len() == 1{
-                    let (r,c) = cells[0];
-                    //fix hopefully
-                    if list[r as usize][c as usize] != 0{
-                        break;
-                    }
-                    let mut _cand = candidates.get_mut(&(r,c)).unwrap();
-                    _cand = &mut vec![val];
-                    list[r as usize][c as usize] = val;
-                    println!("{:?} {:?}", (r, c), val);
-                    return true;
+        }
+        for (val, cells) in count{
+            if cells.len() == 1{
+                let (r,c) = cells[0];
+                //fix hopefully
+                if list[r as usize][c as usize] != 0{
+                    break;
                 }
+                candidates.insert((r, c), vec![val]);
+                list[r as usize][c as usize] = val; //TODO unnecessary
+                println!("{:?} {:?}", (r, c), val);
+                changed = true;
             }
         }
     }
-    false
+    changed
 }
 
+//TODO Funktion eigentlich unnötig zum lösen, nur für schwierigkeit zu gebrauchen.
 fn naked_single(candidates: &mut HashMap<(i32, i32), Vec<i32>>, list: &mut Vec<Vec<i32>>) -> bool {
+    let mut changed = false;
     for ((r, c), val) in candidates.clone(){
         if val.len() == 1 && list[r as usize][c as usize] == 0{
             let mut _cand = candidates.get_mut(&(r, c)).unwrap();
             _cand = &mut vec![val[0]];
             list[r as usize][c as usize] = val[0];
-            println!("{:?} {:?}", (r, c), val[0]);
-            return true;
+            println!("{:?}", candidates.get(&(r, c)).unwrap());
+            changed = true;
         }
     }
-    false
+    changed
 }
 
 fn apply_pointing_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &mut Vec<Vec<i32>>) -> bool {
@@ -195,7 +192,7 @@ fn apply_pointing_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &m
 
             // Check for values that appear only in one row or column in the box
             for (val, positions) in pos_by_val {
-                let rows: HashSet<_> = positions.iter().map(|(r, _)| r).collect(); //rows where that value appears
+                let rows: HashSet<_> = positions.iter().map(|(r, _)| r).collect();
                 let cols: HashSet<_> = positions.iter().map(|(_, c)| c).collect();
 
                 if rows.len() == 1 {
@@ -231,7 +228,6 @@ fn apply_pointing_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &m
             }
         }
     }
-
     changed
 }
 
@@ -312,3 +308,5 @@ fn apply_claiming_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &m
     }
     changed
 }
+
+
