@@ -15,8 +15,9 @@ pub fn serate(list: &mut Vec<Vec<i32>>) -> f64{
     let mut candidates = initial_candidates(&list, board_size as i32);
     //println!("{:?}", naked_single(&mut candidates, list));
     //println!("{:?}", hidden_single(&mut candidates, board_size as i32, list));
-    println!("{:?}", apply_pointing_pair(&mut candidates, list));
+    //println!("{:?}", apply_pointing_pair(&mut candidates, list));
     //println!("{:?}", apply_claiming_pair(&mut candidates, list));
+    println!("{:?}", apply_x_wing(&mut candidates, list));
     println!("{:?}", candidates);
     return 0.0;
 }
@@ -332,7 +333,8 @@ fn apply_x_wing(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &mut Vec<
                             for &c in cols{
                                 if let Some(cell_cands) = candidates.get_mut(&(r as i32, c as i32)){
                                     if cell_cands.contains(&(val as i32)){
-                                        cell_cands.remove(r);
+                                        let index = cell_cands.iter().position(|n| *n == val as i32).unwrap();
+                                        cell_cands.remove(index);
                                         changed = true;
                                     }
                                 }
