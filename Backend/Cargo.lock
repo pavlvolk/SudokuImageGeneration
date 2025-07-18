@@ -15,6 +15,7 @@ dependencies = [
  "num_cpus",
  "once_cell",
  "rand",
+ "rayon",
  "serde",
  "serde_json",
 ]

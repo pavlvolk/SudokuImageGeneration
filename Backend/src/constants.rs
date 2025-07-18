@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 
 
-pub const SOLUTION: &str = "data/generated_cut_80.txt";
+pub const SOLUTION: &str = "data/generated_cut_160.txt";
 pub const SOLUTION_4: &str = "data/sudoku_solutions_4x4.txt";
 pub const SOLUTION_6: &str = "data/sudoku_solutions_6x6.txt";
 pub const TEST: &str = "data/unbiased_sudokus_formated.txt";
