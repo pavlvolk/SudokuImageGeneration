@@ -36,6 +36,9 @@ use crate::constants::TEST;
 use crate::testen_der_neuen_loesung::csv_tests_compare;
 use crate::generate_picture::generate_picture;
 use itertools::Itertools;
+use rayon::prelude::*;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 //Input structure
 #[derive(Deserialize)]
@@ -229,24 +232,33 @@ fn option_6(){
 }
 
 fn option_7(){
+    let found = Arc::new(AtomicBool::new(false));
     let mut s = Sudoku::new(6);
-    for combo in (0..36).combinations(6) {
-        let mut v = vec![0; 36];
-        for &i in &combo {
-            v[i] = 1;
-        }
-        match calculate_solution(&v, &mut s, false) {
-            Ok(Some(solution)) => {
-                println!("Lösung gefunden für Kombination: {:?}", v);
-                println!("→ Lösung: {:?}", solution);
-                break;
-            },
-            Ok(None) => {
-                // Keine Lösung für diese Kombination
-            },
-            Err(e) => {
-                eprintln!("Fehler bei Kombination {:?}: {}", v, e);
-            },
-        }
-    }
+    (0..36)
+        .combinations(8)
+        .par_bridge()
+        .find_any(|combo| {
+            if found.load(Ordering::Relaxed) {
+                return false;
+            }
+
+            let mut v = vec![0; 36];
+            for &i in combo {
+                v[i] = 1;
+            }
+
+            match calculate_solution(&v, &mut s.clone(), false) {
+                Ok(Some(solution)) => {
+                    println!("Lösung gefunden für Kombination: {:?}", v);
+                    println!("→ Lösung: {:?}", solution);
+                    found.store(true, Ordering::Relaxed); // Signalisiert Abbruch
+                    true
+                },
+                Ok(None) => false,
+                Err(e) => {
+                    eprintln!("Fehler bei Kombination {:?}: {}", v, e);
+                    false
+                },
+            }
+        });
 }
