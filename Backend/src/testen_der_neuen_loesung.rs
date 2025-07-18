@@ -110,6 +110,9 @@ pub fn csv_tests_compare(file_path: &str) -> Result<(), Box<dyn Error>> {
             .into_iter()
             .map(|x| if x == 0 { 0 } else { 1 })
             .collect();
+
+
+        
         let count_ones = transformed.iter().filter(|&&x| x == 1).count();
 
         let start = Instant::now();
@@ -125,7 +128,7 @@ pub fn csv_tests_compare(file_path: &str) -> Result<(), Box<dyn Error>> {
         solution_list.push((count_ones, solvable, end.as_millis()));
     }
 
-    let mut output_file = File::create("data/new_solutions_only_generated_35.txt")?;
+    let mut output_file = File::create("data/new_solutions_only_generated_160.txt")?;
     for element in solution_list{
         writeln!(output_file, "{},{},{:?}", element.0, element.1, element.2)?;
     }
