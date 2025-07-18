@@ -62,8 +62,8 @@ pub fn initial_candidates(list: &Vec<Vec<i32>>, board_size: i32) -> HashMap<(i32
                         }
                     }
                 }
-                let block_corner_r = (r % vertical_box_size)*vertical_box_size;
-                let block_corner_c = (c % horizontal_box_size)*horizontal_box_size;
+                let block_corner_r = (r / vertical_box_size)*vertical_box_size;
+                let block_corner_c = (c / horizontal_box_size)*horizontal_box_size;
                 for br in block_corner_r..block_corner_r + vertical_box_size {
                     for bc in block_corner_c..block_corner_c + horizontal_box_size {
                         if let Some(cell) = candidates.get_mut(&(br,bc)){
