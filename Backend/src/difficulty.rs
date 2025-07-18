@@ -309,4 +309,39 @@ fn apply_claiming_pair(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &m
     changed
 }
 
+fn apply_x_wing(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &mut Vec<Vec<i32>>) -> bool {
+    let mut changed = false;
+    for val in 1..=board.len(){
+        let mut row_to_cols: HashMap<usize, Vec<usize>> = HashMap::new();
+        for r in 0..board.len(){
+            let col = (0..board.len()).filter(|&c| candidates.get(&(r as i32, c as i32)).map_or(false, |s| s.contains(&(val as i32)))).collect::<Vec<_>>();
+            if col.len() == 2{
+                row_to_cols.insert(r, col);
+            }
+        }
 
+        let rows = row_to_cols.keys().cloned().collect::<Vec<_>>();
+        for i in 0..rows.len(){
+            for j in i+1..rows.len(){
+                let r1 = rows[i];
+                let r2 = rows[j];
+                if row_to_cols[&r1] == row_to_cols[&r2]{
+                    let cols = &row_to_cols[&r1];
+                    for r in 0..board.len(){
+                        if r != r1 && r != r2 {
+                            for &c in cols{
+                                if let Some(cell_cands) = candidates.get_mut(&(r as i32, c as i32)){
+                                    if cell_cands.contains(&(val as i32)){
+                                        cell_cands.remove(r);
+                                        changed = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    changed
+}
