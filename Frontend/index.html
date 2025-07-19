@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sudoku Auswahl</title>
+
+    <!-- PDF & Screenshot Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="node_modules/jspdf.umd.min.js"></script>
+    <script src="node_modules/svg2pdf.umd.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+<body>
+<div id="loadingOverlay" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+">
+
+    <!-- Lade-GIF -->
+    <img src="https://www.animierte-gifs.net/data/media/983/animiertes-biber-bild-0021.gif" border="0" alt="animiertes-biber-bild-0021" />
+
+    <!-- Lade-Text mit weißem Hintergrund -->
+    <div id="loader2" style="
+        margin-top: 20px;
+        background: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 24px;
+        color: black;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    ">
+        <span class="rotating">⏳</span> Lade Sudokus...
+    </div>
+
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div class="controls">
+        <div class="button-group">
+            <button id="grid4" onclick="setGridSize(4)">4x4</button>
+            <button id="grid6" onclick="setGridSize(6)">6x6</button>
+            <button id="grid9" onclick="setGridSize(9)">9x9</button>
+        </div>
+
+        <select id="modeSelector" onchange="changeMode()" style="display: none;">
+            <option value="mark">Felder markieren</option>
+            <option value="input">Zahlen eingeben</option>
+        </select>
+
+        <div>
+            <button id="markBtn" onclick="selectMode('mark')">Felder markieren</button>
+            <button id="inputBtn" onclick="selectMode('input')">Zahlen eingeben</button>
+        </div>
+
+        <div class="controls3">
+            <button id="uploadBtn">Hintergrundbild hochladen</button>
+            <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+            <button id="removeBg">Hintergrundbild entfernen</button>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button onclick="showSudokuRules()">Sudoku-Regeln anzeigen</button>
+
+        <p id="changeCounter" style="
+    background: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: inline-block;
+">
+            Markierte Felder: 0
+        </p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div class="controls">
+        <div class="grid-wrapper">
+            <div class="background" id="background"></div>
+            <div class="grid" id="grid"></div>
+        </div>
+
+        <div class="controls2">
+            <button onclick="createSudoku()">Sudoku erstellen</button>
+            <button onclick="resetGrid()">Zurücksetzen</button>
+            <button id="numbersBtn" onclick="insertNumbers()">Zahlen eingeben</button>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <svg xmlns="http://www.w3.org/2000/svg"  id="partialSvg" style="display:none;">
+            <style>
+                text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }
+            </style>
+        </svg>
+
+        <div class="button-group">
+            <button id="downloadBtn" onclick="downloadSudoku(partialSvg)" style="display:none; margin-top: 1rem;">download partial Sudoku</button>
+            <button id="download filled sudoku" onclick="downloadSudoku(fullSvg)" style="display:none; margin-top: 1rem;">download filled Sudoku</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+<svg xmlns="http://www.w3.org/2000/svg" width="450" height="450" viewBox="0 0 450 450" id="fullSvg" style="display:none;">
+    <style>
+        text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }
+    </style>
+</svg>
+
+
+
+
+<div id="errorOutput" style="color:red; margin-top:10px;"></div>
+
+<div id = "indices" style = "color:blue; margin-top:10px ;"></div>
+
+<div id="rulesModal">
+    <div id="rulesModalContent">
+        <h2>Sudoku-Regeln</h2>
+        <p>
+            🔹 Jede Zahl darf nur einmal pro Zeile/Spalte/Block vorkommen.<br><br>
+            🔹 Pro Dreier/Zweierblock an Spalten/Zeilen müssen mindestens zwei beziehungsweise eine Spalte/Zeile einen Eintrag haben.<br><br>
+            🔹 Bei 9x9 müssen mindestens 17 Felder markiert werden<br><br>
+            <b>Markierungsmodus:</b> Felder markieren.<br>
+            <b>Eingabemodus:</b> Zahlen eingeben.<br><br>
+        </p>
+        <button onclick="closeRulesModal()" style="margin-top:1rem; padding:0.5rem 1rem; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">Schließen</button>
+    </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
