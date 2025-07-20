@@ -33,6 +33,10 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
         solver.add_clause(clause);
     }
     if !filled {
+        if !test_if_solvable(list, &mut sudoku){
+            return Ok(None);       
+            //TODO Error Nachricht anpassen, damit man nicht denken kann das es vielleicht doch eine Lösung gibt.
+        }
         if size == 4 || size == 6 {
             let file = if size == 4 { File::open(SOLUTION_4).unwrap()} else { File::open(SOLUTION_6).unwrap()};
             let reader = BufReader::new(file);
@@ -179,6 +183,28 @@ pub fn thread_calculation(constraint_list: &Vec<usize>, list: &Vec<usize>) -> Op
     drop(tx);
     rx.recv().ok()
 }
+
+
+/*
+Testet zunächst ob das Sudoku mit den ausgewählten Zahlen überhaupt lösbar ist.
+Wenn nicht kann dann schnell abgelehnt werden.
+ */
+fn test_if_solvable(list: &Vec<usize>, mut sudoku: &mut Sudoku) -> bool {
+    let new_list: Vec<usize> = list
+        .iter()
+        .map(|x| if *x == 0 { 0 } else { *x - 1 })
+        .collect();
+    
+    let mut solver = Solver::new();
+    let clauses = sudoku_clauses(sudoku.board_size);
+    for clause in clauses {
+        solver.add_clause(clause);
+    }
+    
+    let (solvable, possible_sol) = sudoku::Sudoku::solvable(sudoku, &new_list, &mut solver);
+    solvable
+}
+
 
 
 /*
