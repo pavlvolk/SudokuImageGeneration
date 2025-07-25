@@ -6,41 +6,18 @@
     <title>Sudoku Auswahl</title>
 
     <!-- PDF & Screenshot Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="node_modules/jspdf.umd.min.js"></script>
     <script src="node_modules/svg2pdf.umd.min.js"></script>
     <link rel="stylesheet" href="styles.css">
+</head>
 <body>
-<div id="loadingOverlay" style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 9999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-">
+<div id="loadingOverlay" class="loadingOverlay">
 
     <!-- Lade-GIF -->
     <img src="https://www.animierte-gifs.net/data/media/983/animiertes-biber-bild-0021.gif" border="0" alt="animiertes-biber-bild-0021" />
 
     <!-- Lade-Text mit weißem Hintergrund -->
-    <div id="loader2" style="
-        margin-top: 20px;
-        background: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-size: 24px;
-        color: black;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    ">
+    <div id="loader2" class="loader2">
         <span class="rotating">⏳</span> Lade Sudokus...
     </div>
 
@@ -61,7 +38,7 @@
 
         <div>
             <button id="markBtn" onclick="selectMode('mark')">Felder markieren</button>
-            <button id="inputBtn" onclick="selectMode('input')">Zahlen eingeben</button>
+            <button id="inputBtn" onclick="selectMode('input')">Sudoku Löser</button>
         </div>
 
         <div class="controls3">
@@ -75,12 +52,7 @@
     <div class="controls">
         <button onclick="showSudokuRules()">Sudoku-Regeln anzeigen</button>
 
-        <p id="changeCounter" style="
-    background: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    display: inline-block;
-">
+        <p id="changeCounter" class="changeCounter">
             Markierte Felder: 0
         </p>
     </div>
@@ -96,7 +68,7 @@
         <div class="controls2">
             <button onclick="createSudoku()">Sudoku erstellen</button>
             <button onclick="resetGrid()">Zurücksetzen</button>
-            <button id="numbersBtn" onclick="insertNumbers()">Zahlen eingeben</button>
+            <button id="numbersBtn">Zahlen eingeben</button>
         </div>
 
     </div>
@@ -146,6 +118,6 @@
         <button onclick="closeRulesModal()" style="margin-top:1rem; padding:0.5rem 1rem; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">Schließen</button>
     </div>
 </div>
-<script src="script.js"></script>
+<script src="ui.js"></script>
 </body>
 </html>
