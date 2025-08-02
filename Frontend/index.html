@@ -26,19 +26,19 @@
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
     <div class="controls">
         <div class="button-group">
-            <button id="grid4" onclick="setGridSize(4)">4x4</button>
-            <button id="grid6" onclick="setGridSize(6)">6x6</button>
-            <button id="grid9" onclick="setGridSize(9)">9x9</button>
+            <button id="grid4" >4x4</button>
+            <button id="grid6" >6x6</button>
+            <button id="grid9" >9x9</button>
         </div>
 
         <select id="modeSelector" onchange="changeMode()" style="display: none;">
-            <option value="mark">Felder markieren</option>
+            <option value="mark">Sudoku Generator</option>
             <option value="input">Zahlen eingeben</option>
         </select>
 
         <div>
-            <button id="markBtn" onclick="selectMode('mark')">Felder markieren</button>
-            <button id="inputBtn" onclick="selectMode('input')">Sudoku Löser</button>
+            <button id="markBtn" >Sudoku Generator</button>
+            <button id="inputBtn" >Sudoku Löser</button>
         </div>
 
         <div class="controls3">
@@ -50,7 +50,7 @@
     </div>
 
     <div class="controls">
-        <button onclick="showSudokuRules()">Sudoku-Regeln anzeigen</button>
+        <button id="rulesBtn">Sudoku-Regeln anzeigen</button>
 
         <p id="changeCounter" class="changeCounter">
             Markierte Felder: 0
@@ -66,8 +66,8 @@
         </div>
 
         <div class="controls2">
-            <button onclick="createSudoku()">Sudoku erstellen</button>
-            <button onclick="resetGrid()">Zurücksetzen</button>
+            <button id="createBtn" >Sudoku erstellen</button>
+            <button id="resetBtn" >Zurücksetzen</button>
             <button id="numbersBtn">Zahlen eingeben</button>
         </div>
 
@@ -81,8 +81,8 @@
         </svg>
 
         <div class="button-group">
-            <button id="downloadBtn" onclick="downloadSudoku(partialSvg)" style="display:none; margin-top: 1rem;">download partial Sudoku</button>
-            <button id="download filled sudoku" onclick="downloadSudoku(fullSvg)" style="display:none; margin-top: 1rem;">download filled Sudoku</button>
+            <button id="downloadBtn"  style="display:none; margin-top: 1rem;">download partial Sudoku</button>
+            <button id="download filled sudoku"  style="display:none; margin-top: 1rem;">download filled Sudoku</button>
         </div>
     </div>
 </div>
@@ -115,9 +115,10 @@
             <b>Markierungsmodus:</b> Felder markieren.<br>
             <b>Eingabemodus:</b> Zahlen eingeben.<br><br>
         </p>
-        <button onclick="closeRulesModal()" style="margin-top:1rem; padding:0.5rem 1rem; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">Schließen</button>
+        <button id="closeRulesBtn" style="margin-top:1rem; padding:0.5rem 1rem; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">Schließen</button>
     </div>
 </div>
 <script src="ui.js"></script>
+<script src="sudoku.js"></script>
 </body>
 </html>
