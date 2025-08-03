@@ -77,7 +77,7 @@ function createGrid(size) {
             const cell = document.createElement('div');
             cell.classList.add('cell');
 
-            if (row % blockRows === 0) cell.classList.add('thick-top');
+            if (row % blockRows === 0) cell.classList.add('thick-top');     
             if (col % blockCols === 0) cell.classList.add('thick-left');
             if (col === size - 1) cell.classList.add('thick-right');
             if (row === size - 1) cell.classList.add('thick-bottom');
@@ -437,7 +437,7 @@ function checkRowColDistribution(values, size, errors) {
     // Zeilenblöcke prüfen
     for (let i = 0; i < size; i += blockSize) {
         let filledRows = 0;
-        let emptyRows = []; // Sammeln, welche Zeilen leer sind
+        let emptyRows = []; // Sammeln, welche Zeilen leer sindA
         for (let r = i; r < i + blockSize; r++) {
             const hasEntry = values.slice(r * size, (r + 1) * size).some(v => v !== 0 && v !== "0" && v !== "");
             if (hasEntry) {
@@ -747,13 +747,6 @@ function insertNumberssubfunction(e, index) {
 
     // Update state and changes (like in createGrid)
     gridState[index] = val && gridState[index] !== 0 ? parseInt(val, 10)+1 : 0;
-    if (val) {
-        changes++;
-    } else {
-        changes--;
-    }
-    updateChangeCounter();
-    dynamicErrors();
 }
 
 function insertNumbers() {

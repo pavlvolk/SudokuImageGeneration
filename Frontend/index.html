@@ -6,41 +6,18 @@
     <title>Sudoku Auswahl</title>
 
     <!-- PDF & Screenshot Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="node_modules/jspdf.umd.min.js"></script>
     <script src="node_modules/svg2pdf.umd.min.js"></script>
     <link rel="stylesheet" href="styles.css">
+</head>
 <body>
-<div id="loadingOverlay" style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 9999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-">
+<div id="loadingOverlay" class="loadingOverlay">
 
     <!-- Lade-GIF -->
     <img src="https://www.animierte-gifs.net/data/media/983/animiertes-biber-bild-0021.gif" border="0" alt="animiertes-biber-bild-0021" />
 
     <!-- Lade-Text mit weißem Hintergrund -->
-    <div id="loader2" style="
-        margin-top: 20px;
-        background: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-size: 24px;
-        color: black;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    ">
+    <div id="loader2" class="loader2">
         <span class="rotating">⏳</span> Lade Sudokus...
     </div>
 
@@ -49,19 +26,19 @@
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
     <div class="controls">
         <div class="button-group">
-            <button id="grid4" onclick="setGridSize(4)">4x4</button>
-            <button id="grid6" onclick="setGridSize(6)">6x6</button>
-            <button id="grid9" onclick="setGridSize(9)">9x9</button>
+            <button id="grid4" >4x4</button>
+            <button id="grid6" >6x6</button>
+            <button id="grid9" >9x9</button>
         </div>
 
         <select id="modeSelector" onchange="changeMode()" style="display: none;">
-            <option value="mark">Felder markieren</option>
+            <option value="mark">Sudoku Generator</option>
             <option value="input">Zahlen eingeben</option>
         </select>
 
         <div>
-            <button id="markBtn" onclick="selectMode('mark')">Felder markieren</button>
-            <button id="inputBtn" onclick="selectMode('input')">Zahlen eingeben</button>
+            <button id="markBtn" >Sudoku Generator</button>
+            <button id="inputBtn" >Sudoku Löser</button>
         </div>
 
         <div class="controls3">
@@ -73,14 +50,9 @@
     </div>
 
     <div class="controls">
-        <button onclick="showSudokuRules()">Sudoku-Regeln anzeigen</button>
+        <button id="rulesBtn">Sudoku-Regeln anzeigen</button>
 
-        <p id="changeCounter" style="
-    background: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    display: inline-block;
-">
+        <p id="changeCounter" class="changeCounter">
             Markierte Felder: 0
         </p>
     </div>
@@ -94,9 +66,9 @@
         </div>
 
         <div class="controls2">
-            <button onclick="createSudoku()">Sudoku erstellen</button>
-            <button onclick="resetGrid()">Zurücksetzen</button>
-            <button id="numbersBtn" onclick="insertNumbers()">Zahlen eingeben</button>
+            <button id="createBtn" >Sudoku erstellen</button>
+            <button id="resetBtn" >Zurücksetzen</button>
+            <button id="numbersBtn">Zahlen eingeben</button>
         </div>
 
     </div>
@@ -109,8 +81,8 @@
         </svg>
 
         <div class="button-group">
-            <button id="downloadBtn" onclick="downloadSudoku(partialSvg)" style="display:none; margin-top: 1rem;">download partial Sudoku</button>
-            <button id="download filled sudoku" onclick="downloadSudoku(fullSvg)" style="display:none; margin-top: 1rem;">download filled Sudoku</button>
+            <button id="downloadBtn"  style="display:none; margin-top: 1rem;">download partial Sudoku</button>
+            <button id="download filled sudoku"  style="display:none; margin-top: 1rem;">download filled Sudoku</button>
         </div>
     </div>
 </div>
@@ -143,9 +115,10 @@
             <b>Markierungsmodus:</b> Felder markieren.<br>
             <b>Eingabemodus:</b> Zahlen eingeben.<br><br>
         </p>
-        <button onclick="closeRulesModal()" style="margin-top:1rem; padding:0.5rem 1rem; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">Schließen</button>
+        <button id="closeRulesBtn" style="margin-top:1rem; padding:0.5rem 1rem; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">Schließen</button>
     </div>
 </div>
-<script src="script.js"></script>
+<script src="ui.js"></script>
+<script src="sudoku.js"></script>
 </body>
 </html>
