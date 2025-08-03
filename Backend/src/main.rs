@@ -93,6 +93,7 @@ async fn main() {
         6 => option_7(),
         _ => println!("Ungültige Auswahl."),
     }
+
 }
 fn option_1() {
     let h = vec![
@@ -261,4 +262,36 @@ fn option_7(){
                 },
             }
         });
+    println!("Done 8, {}", found.load(Ordering::Relaxed));
+
+    let found = Arc::new(AtomicBool::new(false));
+    let mut s = Sudoku::new(6);
+    (0..36)
+        .combinations(7)
+        .par_bridge()
+        .find_any(|combo| {
+            if found.load(Ordering::Relaxed) {
+                return false;
+            }
+
+            let mut v = vec![0; 36];
+            for &i in combo {
+                v[i] = 1;
+            }
+
+            match calculate_solution(&v, &mut s.clone(), false) {
+                Ok(Some(solution)) => {
+                    println!("Lösung gefunden für Kombination: {:?}", v);
+                    println!("→ Lösung: {:?}", solution);
+                    found.store(true, Ordering::Relaxed); // Signalisiert Abbruch
+                    true
+                },
+                Ok(None) => false,
+                Err(e) => {
+                    eprintln!("Fehler bei Kombination {:?}: {}", v, e);
+                    false
+                },
+            }
+        });
+    println!("Done 7, {}", found.load(Ordering::Relaxed));
 }
