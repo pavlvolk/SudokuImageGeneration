@@ -28,6 +28,7 @@ class UIManager {
         this.resetBtn = document.getElementById('resetBtn');
         this.rulesBtn = document.getElementById("rulesBtn");
         this.closeRulesBtn = document.getElementById("closeRulesBtn");
+        this.rateDiffBtn = document.getElementById("rateDiffBtn");
 
         // Button Collections
         this.downloadButtons = {
@@ -94,6 +95,7 @@ class UIManager {
         this.rulesBtn.addEventListener('click', this.showSudokuRules.bind(this));
         this.closeRulesBtn.addEventListener('click', this.closeRulesModal.bind(this));
         this.createBtn.addEventListener('click', this.handleCreateSudoku.bind(this));
+        this.rateDiffBtn.addEventListener('click', this.handleRateDiff.bind(this));
     }
 
     /**
@@ -470,6 +472,26 @@ class UIManager {
             console.error("Error creating Sudoku:", error);
         } finally {
             this.loadingOverlay.style.display = 'none';
+        }
+    }
+
+    async handleRateDiff(){
+        if (this.sudoku.size === 9 && this.sudoku.changes < 17 && this.isInGenerationMode) {
+            alert("For a 9x9 grid, please mark at least 17 fields.");
+            return;
+        }
+        if (this.sudoku.changes === 0) {
+            alert("Please mark some fields or input some numbers first.");
+            return;
+        }
+
+        this.loadingOverlay.style.display = 'flex';
+        this._toggleDownloadButtons(false);
+
+        try{
+            //TODO
+        }catch(error){
+            //TODO
         }
     }
 

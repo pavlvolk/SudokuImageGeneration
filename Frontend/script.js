@@ -19,9 +19,14 @@ const uploadBtn = document.getElementById('uploadBtn');
 const imageUpload = document.getElementById('imageUpload');
 const removeBtn = document.getElementById('removeBg');
 const backgroundDiv = document.getElementById('background');
+const rateDiffBtn = document.getElementById('rateDiffBtn');
 let hasBackgroundImage = false;
 let imageURL;
 
+
+rateDiffBtn.addEventListener('click', (e) => {
+
+});
 
 /*
 Entfernt das Hintergrundbild vom Sudoku
