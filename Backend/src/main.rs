@@ -8,10 +8,7 @@ mod sudoku_clauses;
 mod set_values_from_solution;
 mod testen_Wahrscheinlichkeit;
 mod calculation;
-mod testen_der_neuen_loesung;
-mod generate_picture;
-
-mod constants;
+mod difficulty;
 // Added to ensure the module is included
 
 use std::time::Instant;
@@ -31,14 +28,7 @@ use serde::{Deserialize, Serialize};
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::io::{self, Write};
 use crate::apply_permutations::apply_reverse_permutations;
-use crate::constants::SOLUTION;
-use crate::constants::TEST;
-use crate::testen_der_neuen_loesung::csv_tests_compare;
-use crate::generate_picture::generate_picture;
-use itertools::Itertools;
-use rayon::prelude::*;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use crate::difficulty::{apply_claiming_pair, initial_candidates, rate_difficulty};
 
 //Input structure
 #[derive(Deserialize)]
@@ -52,7 +42,6 @@ struct Input {
 #[derive(Serialize)]
 struct Output {
     data: Vec<i32>,
-    solution: Vec<i32>,
     hassolution: bool ,
 }
 
@@ -70,10 +59,9 @@ async fn main() {
         "Option 1: Beispielsudokus berechnen",
         "Option 2: Zeiten testen",
         "Option 3: Neue Methode",
-        "Option 4: Neue Tests",
-        "Option 5: Start Server",
-        "Option 6: Use Picture",
-        "Option 7: Test 6 and 4"
+        "Option 4: Programm beenden",
+        "Option 5: Start Server",   
+        "Option 6: Difficulty",
     ];
 
     let selection = Select::with_theme(&ColorfulTheme::default())
@@ -90,7 +78,6 @@ async fn main() {
         3 => option_4(),
         4 => option_5().await.unwrap(),
         5 => option_6(),
-        6 => option_7(),
         _ => println!("Ungültige Auswahl."),
     }
 }
@@ -112,30 +99,27 @@ fn option_1() {
     let hints:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
     let mut s = Sudoku::new(9);
     let hints1:Vec<usize> = vec![0, 7, 0, 0, 0, 0, 0, 4, 3, 0, 4, 0, 0, 0, 9, 6, 1, 0, 8, 0, 0, 6, 3, 4, 9, 0, 0, 0, 9, 4, 0, 5, 2, 0, 0, 0, 3, 5, 8, 4, 6, 0, 0, 2, 0, 0, 0, 0, 8, 0, 0, 5, 3, 0, 0, 8, 0, 0, 7, 0, 0, 9, 1, 9, 0, 2, 1, 0, 0, 0, 0, 5, 0, 0, 7, 0, 4, 0, 8, 0, 2];
-    let mut transformed: Vec<usize> = hints1
+    let transformed: Vec<usize> = h
         .into_iter()
         .map(|x| if x == 0 { 0 } else { 1 })
         .collect();
     let count_ones = transformed.iter().filter(|&&x| x != 0).count();
     println!("Anzahl der 1s: {}", count_ones);
-    transformed[9] = 10;
-    transformed[19] = 2;
-    transformed[31] = 6;
-
+    //let t1: Vec<_> = h.into_iter().map(|x| if x == 0 { 0 } else { 1 }).collect();
+    //println!("{:?}", calculate_solution(&hints, &mut s, true).unwrap());
     println!("{:?}", calculate_solution(&transformed, &mut s, false).unwrap());
     //println!("{:?}", calculate_solution(&t1, &mut s, false).unwrap());
 }
 
 fn option_2() {
     println!("Zeiten testen");
-    if let Err(e) = csv_tests(TEST, true) {
+    if let Err(e) = csv_tests("data/sudoku_test_set_9x9.txt", false) {
         eprintln!("Fehler beim Verarbeiten der Datei: {}", e);
     }
 }
 
 fn option_3() {
 
-    let start = Instant::now();
     println!("Threads");
     let h = vec![
         0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -160,14 +144,13 @@ fn option_3() {
         .collect();
     let count_ones = transformed.iter().filter(|&&x| x != 0).count();
     println!("Anzahl der 1s: {}", count_ones);
-    //println!("{:?}", calculation::thread_calculation(&transformed));
+    let mut s = Sudoku::new(9);
+    println!("{:?}", calculation::thread_calculation(&transformed, "data/permuted_solutions.txt", &mut s));
 
-    println!("{}", Instant::now().duration_since(start).as_millis());
 }
 
 fn option_4() {
-    println!("verschiedene Tests");
-    csv_tests_compare(TEST);
+    println!("👋 Programm wird beendet. Auf Wiedersehen!");
 }
 
 #[post("/api/process-tuple")]
@@ -176,7 +159,6 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
     let result;
     let mut output = Output {
         data: vec![0; 81],
-        solution: vec![0; 81],       
         hassolution: false,
     };
     if input.length == 81 {
@@ -185,11 +167,9 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
         println!("{:?}", input.data);
     }
     else if input.length == 36 {
-        println!("{:?}", input.data);
         result = calculate_solution(&input.data, &mut Sudoku::new(6), !input.markingmode);
     }
     else if input.length == 16 {
-        println!("{:?}", input.data);
         result = calculate_solution(&input.data, &mut Sudoku::new(4), !input.markingmode);
     }
     else{
@@ -200,7 +180,6 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
     }
     else{
         let mut outputdata = result.unwrap().unwrap();
-        let solution = outputdata.clone();
         for i in 0..input.length {
             if input.data[i] == 0 {
                 outputdata[i] = 0;
@@ -208,7 +187,6 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
         }
         output.data = outputdata;
         output.hassolution = true;
-        output.solution = solution;
         return HttpResponse::Ok().json(output);
     }
 }
@@ -220,6 +198,7 @@ async fn option_5() -> std::io::Result<()> {
         App::new()
             .wrap(Cors::default().allow_any_origin().allow_any_method().allow_any_header())
             .service(process_tuple)
+            .service(rateDiff)
     })
         .bind("127.0.0.1:8080")?
         .run()
@@ -228,37 +207,133 @@ async fn option_5() -> std::io::Result<()> {
 }
 
 fn option_6(){
-    generate_picture();
+    println!("Difficulty");
+    let vec_4x4: Vec<Vec<i32>> = vec![
+        vec![1, 2, 3, 4],
+        vec![5, 6, 7, 8],
+        vec![9, 10, 11, 12],
+        vec![13, 14, 15, 16],
+    ];
+
+    let array_6x6: [[i32; 6]; 6] = [
+        [1, 2, 3, 4, 5, 6],
+        [7, 8, 9, 10, 11, 12],
+        [13, 14, 15, 16, 17, 18],
+        [19, 20, 21, 22, 23, 24],
+        [25, 26, 27, 28, 29, 30],
+        [31, 32, 33, 34, 35, 36],
+    ];
+    let array_9x9: [[i32; 9]; 9] = [
+        [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        [10, 11, 12, 13, 14, 15, 16, 17, 18],
+        [19, 20, 21, 22, 23, 24, 25, 26, 27],
+        [28, 29, 30, 31, 32, 33, 34, 35, 36],
+        [37, 38, 39, 40, 41, 42, 43, 44, 45],
+        [46, 47, 48, 49, 50, 51, 52, 53, 54],
+        [55, 56, 57, 58, 59, 60, 61, 62, 63],
+        [64, 65, 66, 67, 68, 69, 70, 71, 72],
+        [73, 74, 75, 76, 77, 78, 79, 80, 81],
+    ];
+    let mut board = vec![
+        vec![1, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![2, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![3, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![4, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![5, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![6, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![7, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![8, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+    let mut board1 = vec![
+        vec![1, 2, 3, 4, 5, 6, 7, 8, 0], // Only '9' is missing
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+        vec![0; 9],
+    ];
+    //serate(&mut board);
+   // serate(&mut board1);
+    //println!("{:?}", difficulty::get_all_units(9));
+
+    let mut board2 = vec![
+        8, 3, 2, 0, 0, 7, 0, 9, 0,
+        0, 0, 5, 0, 0, 0, 8, 0, 2,
+        1, 0, 0, 0, 0, 4, 0, 0, 7,
+
+        0, 0, 0, 0, 0, 1, 9, 0, 0,
+        9, 0, 0, 0, 7, 2, 1, 0, 5,
+        6, 0, 3, 0, 0, 9, 7, 0, 8,
+
+        0, 0, 0, 4, 1, 5, 2, 6, 0,
+        5, 6, 0, 0, 2, 0, 4, 7, 0,
+        4, 0, 0, 0, 0, 3, 5, 8, 1,
+    ];
+    
+    let mut board3 = vec![
+        2, 0, 3, 4, 0, 0, 0, 0, 5,
+        8, 0, 9, 1, 6, 0, 7, 0, 4,
+        0, 0, 6, 0, 3, 0, 0, 1, 9,
+
+        7, 0, 2, 0, 0, 3, 0, 6, 0,
+        0, 0, 8, 2, 5, 0, 0, 0, 0,
+        0, 0, 1, 6, 0, 7, 0, 0, 2,
+
+        0, 0, 7, 0, 0, 5, 9, 2, 6,
+        9, 3, 0, 7, 2, 0, 0, 0, 0,
+        6, 0, 0, 0, 9, 0, 4, 7, 0,
+    ];
+
+    let mut board5 = vec![
+        0, 0, 8, 0, 0, 0, 0, 0, 0,
+        0, 0, 9, 8, 0, 0, 5, 4, 3,
+        0, 0, 4, 2, 0, 6, 0, 9, 8,
+
+        0, 0, 0, 4, 0, 0, 0, 0, 0,
+        0, 4, 3, 9, 1, 5, 0, 8, 6,
+        7, 0, 1, 0, 0, 0, 4, 0, 0,
+
+        9, 0, 0, 0, 0, 0, 8, 0, 5,
+        0, 3, 0, 0, 0, 0, 0, 6, 0,
+        5, 0, 0, 1, 3, 0, 0, 0, 0,
+    ];
+
+    let mut board4 = vec![
+        vec![1, 2, 4, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0],
+    ];
+
+    let mut board6 = vec![
+        vec![6, 5, 2, 0, 0, 0, 0, 3, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 4],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+
+        vec![0, 0, 0, 0, 0, 0, 4, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+
+    let mut candidates = initial_candidates(&board6, 9);
+    apply_claiming_pair(&mut candidates, &mut board6);
+    println!("{:?}", candidates);
+    println!("{:?}", rate_difficulty(board5));
 }
 
-fn option_7(){
-    let found = Arc::new(AtomicBool::new(false));
-    let mut s = Sudoku::new(6);
-    (0..36)
-        .combinations(8)
-        .par_bridge()
-        .find_any(|combo| {
-            if found.load(Ordering::Relaxed) {
-                return false;
-            }
-
-            let mut v = vec![0; 36];
-            for &i in combo {
-                v[i] = 1;
-            }
-
-            match calculate_solution(&v, &mut s.clone(), false) {
-                Ok(Some(solution)) => {
-                    println!("Lösung gefunden für Kombination: {:?}", v);
-                    println!("→ Lösung: {:?}", solution);
-                    found.store(true, Ordering::Relaxed); // Signalisiert Abbruch
-                    true
-                },
-                Ok(None) => false,
-                Err(e) => {
-                    eprintln!("Fehler bei Kombination {:?}: {}", v, e);
-                    false
-                },
-            }
-        });
+#[post("/api/rateDiff")]
+async fn rateDiff(input: web::Json<Input>) -> HttpResponse {
+    println!("Attempted Connection!");
+    let result = rate_difficulty(input.data.clone());
+    return HttpResponse::Ok().json(result);
 }
