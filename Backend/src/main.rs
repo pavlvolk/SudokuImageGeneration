@@ -198,6 +198,7 @@ async fn option_5() -> std::io::Result<()> {
         App::new()
             .wrap(Cors::default().allow_any_origin().allow_any_method().allow_any_header())
             .service(process_tuple)
+            .service(rateDiff)
     })
         .bind("127.0.0.1:8080")?
         .run()
@@ -328,4 +329,11 @@ fn option_6(){
     apply_claiming_pair(&mut candidates, &mut board6);
     println!("{:?}", candidates);
     println!("{:?}", rate_difficulty(board5));
+}
+
+#[post("/api/rateDiff")]
+async fn rateDiff(input: web::Json<Input>) -> HttpResponse {
+    println!("Attempted Connection!");
+    let result = rate_difficulty(input.data.clone());
+    return HttpResponse::Ok().json(result);
 }

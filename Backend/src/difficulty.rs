@@ -1,7 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
-pub fn rate_difficulty(list: Vec<i32>) -> f64{
-    let mut list_2d = list.chunks(list.len().isqrt()).map(|row| row.to_vec()).collect::<Vec<Vec<i32>>>();
+pub fn rate_difficulty(list: Vec<usize>) -> f64{
+    let new_list = list.into_iter().map(|x| x as i32).collect::<Vec<i32>>();
+    let mut list_2d = new_list.chunks(new_list.len().isqrt()).map(|row| row.to_vec()).collect::<Vec<Vec<i32>>>();
     serate(&mut list_2d)
 }
 
