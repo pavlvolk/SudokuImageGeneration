@@ -107,10 +107,15 @@ class UIManager {
             cell.classList.remove('marked', 'error');
             cell.innerHTML = '';
         }
-        if(this.isInInsertingNumberMode) {
-            this.numberButton.classList.remove('active-mode');
-            this.isInInsertingNumberMode = false;
-            this._restoreGenerationMode();
+        if(this.isInGenerationMode){
+            if(this.isInInsertingNumberMode) {
+                this.numberButton.classList.remove('active-mode');
+                this.isInInsertingNumberMode = false;
+                this._restoreGenerationMode();
+            }
+        }
+        else {
+            this._setupSudokuSolvingMode();
         }
         this.updateChangeCounter();
     }
@@ -141,6 +146,11 @@ class UIManager {
         });
         this.numberButton.classList.remove('active-mode', 'error');
         this.render();
+        if(!this.isInGenerationMode){
+            this.removeAllListeners();
+            this.reset();
+            this._setupSudokuSolvingMode();
+        }
     }
 
     /**
@@ -156,11 +166,11 @@ class UIManager {
 
         if (!isGenerationMode) {
             this.removeAllListeners();
-            this.reset();
             this.modeButtons.input.classList.toggle('active-mode');
             this.modeButtons.mark.classList.remove('active-mode');
-            this._setupSudokuSolvingMode();
             this.numberButton.style.display = 'none';
+            this.reset();
+            this._setupSudokuSolvingMode();
         } else {
             this.numberButton.style.display = 'block';
             this.modeButtons.input.classList.remove('active-mode');
