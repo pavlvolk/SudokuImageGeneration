@@ -184,16 +184,40 @@ class UIManager {
      * @description Sets up the mode to solve sudokus (this.isInGenerationMode=false)
      * @private
      */
-    _setupSudokuSolvingMode(){
-        for (const [cell, index] of this.cellMap) {
-            const input = document.createElement('input');
-            input.setAttribute('maxlength', '1');
-            input.setAttribute('type', 'text');
-            input.addEventListener('input', (e) => this.setupSudokuSolvingModeSubFunction(e, index));
-            cell.appendChild(input);
-        }
-    }
+    _setupSudokuSolvingMode() {
+        Promise.resolve().then(() => {
+            // First clear any existing inputs
+            for (const [cell, _] of this.cellMap) {
+                cell.innerHTML = '';  // Clear all content from cells
+            }
+            return Promise.resolve();
+        }).then(() => {
+            // Ensure no leftover inputs
+            const existingInputs = document.querySelectorAll('input');
+            existingInputs.forEach(input => input.remove());
 
+            // Now add single input to each cell
+            for (const [cell, index] of this.cellMap) {
+                // Check if cell already has an input
+                if (cell.querySelector('input')) {
+                    continue;  // Skip if input already exists
+                }
+
+                const input = document.createElement('input');
+                input.setAttribute('maxlength', '1');
+                input.setAttribute('type', 'text');
+
+                // Add styling to center the input
+                input.style.display = 'block';
+                input.style.margin = '0 auto';
+                input.style.width = '80%';
+                input.style.textAlign = 'center';
+
+                input.addEventListener('input', (e) => this.setupSudokuSolvingModeSubFunction(e, index));
+                cell.appendChild(input);
+            }
+        });
+    }
     /**
      * @description Handles number input in a cell
      * @param {Event} e - Input event
