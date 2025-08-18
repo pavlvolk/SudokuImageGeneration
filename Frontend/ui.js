@@ -28,7 +28,8 @@ class UIManager {
         this.resetBtn = document.getElementById('resetBtn');
         this.rulesBtn = document.getElementById("rulesBtn");
         this.closeRulesBtn = document.getElementById("closeRulesBtn");
-        this.rateDiffBtn = document.getElementById("rateDiffBtn");
+        //this.rateDiffBtn = document.getElementById("rateDiffBtn");
+        this.difficulty = document.getElementById("difficulty");
 
         // Button Collections
         this.downloadButtons = {
@@ -95,7 +96,15 @@ class UIManager {
         this.rulesBtn.addEventListener('click', this.showSudokuRules.bind(this));
         this.closeRulesBtn.addEventListener('click', this.closeRulesModal.bind(this));
         this.createBtn.addEventListener('click', this.handleCreateSudoku.bind(this));
-        this.rateDiffBtn.addEventListener('click', this.handleRateDiff.bind(this));
+        //this.rateDiffBtn.addEventListener('click', this.handleRateDiff.bind(this));
+    }
+
+    /**
+     * @description Updates the difficulty
+     * @private
+     */
+    updateDifficulty(diff) {
+        this.difficulty.textContent = `${"Schwierigkeit"}: ${diff}/5`;
     }
 
     /**
@@ -109,6 +118,7 @@ class UIManager {
             cell.innerHTML = '';
         }
         this.updateChangeCounter();
+        this.difficulty.textContent = `${"Schwierigkeit"}: 0/5`;
     }
 
     /**
@@ -460,8 +470,10 @@ class UIManager {
             if (!result.hassolution) {
                 alert("No matching Sudoku was found in our database.");
             } else {
+                console.log(result.data);
                 this.currentSolution = result.data;
                 this.currentFullSolution = result.solution;
+                this.updateDifficulty(result.difficulty)
                 await this._renderSVG(result.data, result.solution, this.partialSvg);
                 await this._renderSVG(result.data, result.solution, this.fullSvg, true);
                 this.partialSvg.style.display = "block";
@@ -489,9 +501,23 @@ class UIManager {
         this._toggleDownloadButtons(false);
 
         try{
-            //TODO
+            const response = await fetch('http://localhost:8080/api/rateDiff', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    data: this.currentSolution,
+                    length: this.sudoku.size * this.sudoku.size,
+                    markingmode: this.isInGenerationMode
+                })
+            });
+            if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
+            const result = await response.json();
+            console.log(result);
         }catch(error){
-            //TODO
+            alert("An error occurred while creating the Sudoku. Make sure your local server is running. Error: " + error.message);
+            console.error("Error creating Sudoku:", error);
+        } finally {
+            this.loadingOverlay.style.display = 'none';
         }
     }
 
