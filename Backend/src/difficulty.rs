@@ -1,8 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
-pub fn rate_difficulty(list: Vec<usize>) -> f64{
-    let new_list = list.into_iter().map(|x| x as i32).collect::<Vec<i32>>();
-    let mut list_2d = new_list.chunks(new_list.len().isqrt()).map(|row| row.to_vec()).collect::<Vec<Vec<i32>>>();
+pub fn rate_difficulty(list: Vec<i32>) -> f64{
+    //let new_list = list.into_iter().map(|x| x as i32).collect::<Vec<i32>>();
+    let mut list_2d = list.chunks(list.len().isqrt()).map(|row| row.to_vec()).collect::<Vec<Vec<i32>>>();
     serate(&mut list_2d)
 }
 
@@ -17,7 +17,6 @@ fn serate(list: &mut Vec<Vec<i32>>) -> f64{
     let mut candidates = initial_candidates(&list, board_size as i32);
     display_candidates(&candidates);
     loop{
-        println!("Candidates: {:?}", list);
         display_candidates(&candidates);
         compute_candidates(&mut candidates, board_size as i32);
         let mut solved = true;
@@ -31,41 +30,35 @@ fn serate(list: &mut Vec<Vec<i32>>) -> f64{
             return difficulty;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        println!("Naked: {:?}", list);
         display_candidates(&candidates);
         if naked_single(&mut candidates, list) {
            difficulty = difficulty.max(naked_single_d);
             continue;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        println!("Hidden: {:?}", list);
         display_candidates(&candidates);
         if hidden_single(&mut candidates, board_size as i32, list){
             difficulty = difficulty.max(hidden_single_d);
             continue;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        println!("Pointing: {:?}", list);
         display_candidates(&candidates);
         if apply_pointing_pair(&mut candidates, list){
             difficulty = difficulty.max(pointing_d);
             continue;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        println!("Claiming: {:?}", list);
         display_candidates(&candidates);
         if apply_claiming_pair(&mut candidates, list){
             difficulty = difficulty.max(claiming_d);
             continue;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        println!("X: {:?}", list);
         display_candidates(&candidates);
         if apply_x_wing(&mut candidates, list){
             difficulty = difficulty.max(x_wing_d);
             continue;
         }
-        println!("{:?}", list);
         return 5.0
     }
     5.0

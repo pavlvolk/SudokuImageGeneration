@@ -9,6 +9,7 @@ mod set_values_from_solution;
 mod testen_Wahrscheinlichkeit;
 mod calculation;
 mod difficulty;
+mod constants;
 // Added to ensure the module is included
 
 use std::time::Instant;
@@ -42,7 +43,9 @@ struct Input {
 #[derive(Serialize)]
 struct Output {
     data: Vec<i32>,
-    hassolution: bool ,
+    solution: Vec<i32>,
+    hassolution: bool,
+    difficulty: f64,
 }
 
 #[actix_web::main]
@@ -145,7 +148,7 @@ fn option_3() {
     let count_ones = transformed.iter().filter(|&&x| x != 0).count();
     println!("Anzahl der 1s: {}", count_ones);
     let mut s = Sudoku::new(9);
-    println!("{:?}", calculation::thread_calculation(&transformed, "data/permuted_solutions.txt", &mut s));
+    //println!("{:?}", calculation::thread_calculation(&transformed));
 
 }
 
@@ -159,7 +162,9 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
     let result;
     let mut output = Output {
         data: vec![0; 81],
+        solution: vec![0; 81],
         hassolution: false,
+        difficulty: 0.0,
     };
     if input.length == 81 {
         result = calculate_solution(&input.data, &mut Sudoku::new(9), !input.markingmode);
@@ -176,10 +181,13 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
         return HttpResponse::BadRequest().json("Wrong Dimension");
     }
     if result.as_ref().unwrap().is_none() {
+        println!("No solution found");
         return HttpResponse::Ok().json(output);
     }
     else{
+        println!("Solution found");
         let mut outputdata = result.unwrap().unwrap();
+        let solution = outputdata.clone();
         for i in 0..input.length {
             if input.data[i] == 0 {
                 outputdata[i] = 0;
@@ -187,6 +195,8 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
         }
         output.data = outputdata;
         output.hassolution = true;
+        output.solution = solution;
+        output.difficulty = rate_difficulty(output.data.clone());
         return HttpResponse::Ok().json(output);
     }
 }
@@ -198,7 +208,7 @@ async fn option_5() -> std::io::Result<()> {
         App::new()
             .wrap(Cors::default().allow_any_origin().allow_any_method().allow_any_header())
             .service(process_tuple)
-            .service(rateDiff)
+            //.service(rateDiff)
     })
         .bind("127.0.0.1:8080")?
         .run()
@@ -331,9 +341,12 @@ fn option_6(){
     println!("{:?}", rate_difficulty(board5));
 }
 
+/*
 #[post("/api/rateDiff")]
 async fn rateDiff(input: web::Json<Input>) -> HttpResponse {
     println!("Attempted Connection!");
     let result = rate_difficulty(input.data.clone());
     return HttpResponse::Ok().json(result);
 }
+
+*/
