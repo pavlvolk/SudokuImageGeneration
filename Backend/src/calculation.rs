@@ -1,4 +1,3 @@
-use crate::constants::TEST;
 use crate::constants::{NUMBER_OF_THREADS, SOLUTION, SOLUTION_4, SOLUTION_6, SOLUTION_PER_THREAD};
 use crate::sudoku;
 use crate::sudoku::Sudoku;
