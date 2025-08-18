@@ -117,3 +117,55 @@ fn var_num(row: i32, column: i32, val: i32, board_size: i32) -> i32{
 pub fn add_hint(clauses: &mut Vec<i32>, hint:i32, row:i32, col:i32, board_size:i32){
     clauses.push(var_num(row, col, hint, board_size));
 }
+
+pub fn add_fix_numbers(board_size: i32, given_numbers: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+    let mut clauses: Vec<Vec<i32>> = Vec::new();
+    for number in 0..board_size as usize {
+        for position in given_numbers[number].clone(){
+            for second_number in number+1..board_size as usize {
+                for second_position in given_numbers[second_number].clone(){
+                    let first_col = position % board_size + 1;
+                    let second_col = second_position % board_size + 1;
+                    let first_row = position / board_size + 1;
+                    let second_row = second_position / board_size + 1;
+                    for val in 1..=board_size {
+                        clauses.push(vec![-var_num(first_row, first_col, val, board_size), -var_num(second_row, second_col, val, board_size)]);
+                    }
+                    
+                }
+            }
+        }
+    }
+    
+    for number in 0..board_size as usize {
+        let positions = given_numbers[number].clone();
+        for i in 0..positions.len() {
+            for j in i+1..positions.len() {
+                let first_col = positions[i] % board_size + 1;
+                let second_col = positions[j] % board_size + 1;
+                let first_row = positions[i] / board_size + 1;
+                let second_row = positions[j] / board_size + 1;
+                for val in 1..=board_size {
+                    clauses.push(vec![var_num(first_row, first_col, val, board_size), -var_num(second_row, second_col, val, board_size)]);
+                    clauses.push(vec![-var_num(first_row, first_col, val, board_size), var_num(second_row, second_col, val, board_size)]);
+                }
+            }
+        }
+    }
+    clauses
+}
+
+pub fn calculate_set_number_clauses(board_size: i32, set_number: &Vec<usize>) -> Vec<Vec<i32>> {
+    let mut clauses: Vec<Vec<i32>> = Vec::new();
+    let mut given_numbers:Vec<Vec<i32>> = Vec::new();
+    for _ in 0.. board_size as usize {
+        given_numbers.push(Vec::new());
+    }
+    let set_number = set_number.clone();
+    for number in 0.. board_size as usize * board_size as usize {
+        if set_number[number] > 1{
+            given_numbers[set_number[number] - 2].push(number as i32);
+        } 
+    }
+    add_fix_numbers(board_size, &given_numbers)
+}

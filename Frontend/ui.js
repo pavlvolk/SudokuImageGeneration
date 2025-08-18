@@ -72,6 +72,7 @@ class UIManager {
         this.bindEventListeners();
         this.render();
         this.sizeButtons[9].classList.add('active-mode');
+        this.modeButtons["mark"].classList.add('active-mode');
     }
 
     /**
@@ -117,6 +118,16 @@ class UIManager {
             cell.classList.remove('marked', 'error');
             cell.innerHTML = '';
         }
+        if(this.isInGenerationMode){
+            if(this.isInInsertingNumberMode) {
+                this.numberButton.classList.remove('active-mode');
+                this.isInInsertingNumberMode = false;
+                this._restoreGenerationMode();
+            }
+        }
+        else {
+            this._setupSudokuSolvingMode();
+        }
         this.updateChangeCounter();
         this.difficulty.textContent = `${"Schwierigkeit"}: 0/5`;
     }
@@ -145,8 +156,13 @@ class UIManager {
         Object.entries(this.sizeButtons).forEach(([btnSize, button]) => {
             button.classList.toggle('active-mode', parseInt(btnSize) === size);
         });
-
+        this.numberButton.classList.remove('active-mode', 'error');
         this.render();
+        if(!this.isInGenerationMode){
+            this.removeAllListeners();
+            this.reset();
+            this._setupSudokuSolvingMode();
+        }
     }
 
     /**
@@ -164,14 +180,96 @@ class UIManager {
             this.removeAllListeners();
             this.modeButtons.input.classList.toggle('active-mode');
             this.modeButtons.mark.classList.remove('active-mode');
-            this._setupInputMode();
+            this.numberButton.style.display = 'none';
+            this.reset();
+            this._setupSudokuSolvingMode();
         } else {
+            this.numberButton.style.display = 'block';
             this.modeButtons.input.classList.remove('active-mode');
             this.modeButtons.mark.classList.toggle('active-mode');
             this.removeAllListeners();
             this.render();
         }
     }
+
+    /**
+     * @description Sets up the mode to solve sudokus (this.isInGenerationMode=false)
+     * @private
+     */
+    _setupSudokuSolvingMode() {
+        Promise.resolve().then(() => {
+            // First clear any existing inputs
+            for (const [cell, _] of this.cellMap) {
+                cell.innerHTML = '';  // Clear all content from cells
+            }
+            return Promise.resolve();
+        }).then(() => {
+            // Ensure no leftover inputs
+            const existingInputs = document.querySelectorAll('input');
+            existingInputs.forEach(input => input.remove());
+
+            // Now add single input to each cell
+            for (const [cell, index] of this.cellMap) {
+                // Check if cell already has an input
+                if (cell.querySelector('input')) {
+                    continue;  // Skip if input already exists
+                }
+
+                const input = document.createElement('input');
+                input.setAttribute('maxlength', '1');
+                input.setAttribute('type', 'text');
+
+                // Add styling to center the input
+                input.style.display = 'block';
+                input.style.margin = '0 auto';
+                input.style.width = '80%';
+                input.style.textAlign = 'center';
+
+                input.addEventListener('input', (e) => this.setupSudokuSolvingModeSubFunction(e, index));
+                cell.appendChild(input);
+            }
+        });
+    }
+    /**
+     * @description Handles number input in a cell
+     * @param {Event} e - Input event
+     * @param {number} index - Cell index
+     * @private
+     */
+    setupSudokuSolvingModeSubFunction(e, index) {
+        const rowIndex = Math.floor(index / this.size);
+        const colIndex = index % this.size;
+
+        const colValues = this.sudoku.getColumn(colIndex).map(idx => this.sudoku.getValueAt(idx));
+        const rowValues = this.sudoku.getRow(rowIndex).map(idx => this.sudoku.getValueAt(idx));
+        const blockValues = this.sudoku.getBlockIndices(index).map(idx => this.sudoku.getValueAt(idx));
+
+        const usedNumbers = new Set([
+            ...colValues,
+            ...rowValues,
+            ...blockValues
+        ].filter(v => v >= 1));
+
+        const allowedNumbers = Array.from(
+            { length: this.size },
+            (_, i) => i + 1
+        ).filter(n => !usedNumbers.has(n));
+
+        const allowedPattern = allowedNumbers.join('');
+        const regex = new RegExp(`[^${allowedPattern}]`, 'g');
+        const val = e.target.value.replace(regex, '').slice(0, 1);
+
+        if (!val) {
+            e.target.value = '';
+            this.sudoku.setField(index, 0);
+            this.updateChangeCounter();
+            return;
+        }
+
+        this.sudoku.setField(index, parseInt(val, 10));
+        this.updateChangeCounter();
+    }
+
 
     /**
      * @description Sets up input fields for number input mode
@@ -186,10 +284,12 @@ class UIManager {
             const value = this.sudoku.getValueAt(index);
             if (value >= 2) {
                 input.value = (value - 1).toString();
+                input.addEventListener('input', (e) => this.insertNumbersSubFunction(e, index));
             }
-
-            input.addEventListener('input', (e) => this.insertNumbersSubFunction(e, index));
-            cell.appendChild(input);
+            if(value !== 0){
+                input.addEventListener('input', (e) => this.insertNumbersSubFunction(e, index));
+                cell.appendChild(input);
+            }
         }
     }
 
@@ -224,7 +324,7 @@ class UIManager {
 
         if (!val) {
             e.target.value = '';
-            this.sudoku.setField(index, 0);
+            this.sudoku.setField(index, 1);
             return;
         }
 

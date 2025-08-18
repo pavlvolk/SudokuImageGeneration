@@ -38,12 +38,21 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
             let file = if size == 4 { File::open(SOLUTION_4).unwrap()} else { File::open(SOLUTION_6).unwrap()};
             let reader = BufReader::new(file);
             for line in reader.lines() {
+                let clauses = calculate_set_number_clauses(size, list);
+                for clause in clauses {
+                    solver.add_clause(clause);
+                }
+                
                 let transformed: Vec<usize> = line?.chars()
                     .map(|c| c.to_digit(10).expect("Ungültige Ziffer") as usize)
                     .collect();
+                let mapped_list: Vec<usize> = list
+                    .iter()
+                    .map(|x| if *x == 0 { 0 } else { 1 })
+                    .collect();
                 let mut grid_list = Vec::new();
                 for i in  0..(size*size) as usize{
-                    grid_list.push(list[i]*transformed[i]);
+                    grid_list.push(mapped_list[i]*transformed[i]);
                 }
                 let (unique, possible_sol) = Sudoku::unique(sudoku, &grid_list, &mut solver);
                 if unique {
@@ -58,7 +67,11 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
                     }
                     
                     let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku.board_size);
-                    solution = permute_numbers(&solution, sudoku.board_size);
+                    let mut bool = true;
+                    (bool, solution) = permute_numbers_with_constraint(&solution, list, sudoku.board_size);
+                    if !bool{
+                        continue;   
+                    }
                     return Ok(Some(solution));
                 }
             }
@@ -126,6 +139,10 @@ pub fn thread_calculation(constraint_list: &Vec<usize>, list: &Vec<usize>) -> Op
         let mut sudoku_clone = sudoku.clone();
         let mut solver = Solver::new();
         let clauses = sudoku_clauses(sudoku_clone.board_size);
+        for clause in clauses {
+            solver.add_clause(clause);
+        }
+        let clauses = calculate_set_number_clauses(9, constraint_list);
         for clause in clauses {
             solver.add_clause(clause);
         }
@@ -244,9 +261,11 @@ pub fn permute_numbers_with_constraint(result: &Vec<i32>, constraints: &Vec<usiz
                 if numbers.contains(&(new_value)){
                     numbers.remove(&new_value);
                 } else { 
+                    println!("false");
                     return (false, Vec::new());
                 }
             } else if indices[current_value - 1] != new_value {
+                println!("false");
                 return (false, Vec::new());
             }
         }
