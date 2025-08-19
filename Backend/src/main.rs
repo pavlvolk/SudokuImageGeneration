@@ -8,9 +8,9 @@ mod sudoku_clauses;
 mod set_values_from_solution;
 mod testen_Wahrscheinlichkeit;
 mod calculation;
+mod difficulty;
 mod testen_der_neuen_loesung;
 mod generate_picture;
-
 mod constants;
 // Added to ensure the module is included
 
@@ -31,6 +31,7 @@ use serde::{Deserialize, Serialize};
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::io::{self, Write};
 use crate::apply_permutations::apply_reverse_permutations;
+use crate::difficulty::{apply_claiming_pair, initial_candidates, rate_difficulty};
 use crate::constants::SOLUTION;
 use crate::constants::TEST;
 use crate::testen_der_neuen_loesung::csv_tests_compare;
@@ -53,7 +54,8 @@ struct Input {
 struct Output {
     data: Vec<i32>,
     solution: Vec<i32>,
-    hassolution: bool ,
+    hassolution: bool,
+    difficulty: f64,
 }
 
 #[actix_web::main]
@@ -177,8 +179,9 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
     let result;
     let mut output = Output {
         data: vec![0; 81],
-        solution: vec![0; 81],       
+        solution: vec![0; 81],
         hassolution: false,
+        difficulty: 0.0,
     };
     if input.length == 81 {
         result = calculate_solution(&input.data, &mut Sudoku::new(9), !input.markingmode);
@@ -210,6 +213,7 @@ async fn process_tuple(input: web::Json<Input>) -> HttpResponse {
         output.data = outputdata;
         output.hassolution = true;
         output.solution = solution;
+        output.difficulty = rate_difficulty(output.data.clone());
         return HttpResponse::Ok().json(output);
     }
 }

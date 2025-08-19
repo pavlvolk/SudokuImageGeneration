@@ -1,20 +1,17 @@
+use crate::constants::{NUMBER_OF_THREADS, SOLUTION, SOLUTION_4, SOLUTION_6, SOLUTION_PER_THREAD};
+use crate::sudoku;
+use crate::sudoku::Sudoku;
+use crate::sudoku_clauses::sudoku_clauses;
+use cadical::Solver;
+use rand::seq::IteratorRandom;
+use rand::thread_rng;
 use std::collections::HashSet;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::sync::{atomic::{AtomicBool, Ordering}, mpsc, Arc};
 use std::thread;
 use std::time::Instant;
-use cadical::Solver;
-use crate::fill_grid::fill_grid;
-use crate::sudoku;
-use crate::sudoku::Sudoku;
-use crate::sudoku_clauses::{calculate_set_number_clauses, sudoku_clauses};
-use std::sync::{atomic::{AtomicBool, Ordering}, mpsc, Arc};
-use rand::seq::IteratorRandom;
-use rand::thread_rng;
-use crate::apply_permutations::apply_reverse_permutations;
-use crate::constants::{NUMBER_OF_THREADS, SOLUTION, SOLUTION_4, SOLUTION_6, SOLUTION_PER_THREAD};
-use crate::constants::TEST;
 
 /**
 *   This function takes hints and a sudoku of a specific size and outputs a solution if there is a definite one.
