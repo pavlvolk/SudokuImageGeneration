@@ -12,6 +12,7 @@ use std::io::{BufRead, BufReader};
 use std::sync::{atomic::{AtomicBool, Ordering}, mpsc, Arc};
 use std::thread;
 use std::time::Instant;
+use crate::sudoku_clauses::calculate_set_number_clauses;
 
 /**
 *   This function takes hints and a sudoku of a specific size and outputs a solution if there is a definite one.

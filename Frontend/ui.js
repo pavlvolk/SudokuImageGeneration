@@ -544,6 +544,13 @@ class UIManager {
             alert("For a 9x9 grid, please mark at least 17 fields.");
             return;
         }
+        if (this.sudoku.size === 6 && this.sudoku.changes < 8 && this.isInGenerationMode) {
+            alert("For a 6x6 grid, please mark at least 8 fields.");
+            return;
+        }if (this.sudoku.size === 4 && this.sudoku.changes < 4 && this.isInGenerationMode) {
+            alert("For a 4x4 grid, please mark at least 4 fields.");
+            return;
+        }
         if (this.sudoku.changes === 0) {
             alert("Please mark some fields or input some numbers first.");
             return;
@@ -698,6 +705,9 @@ class UIManager {
      * @private
      */
     async _renderSVG(data, solution, svgElement, isFullSolution = false) {
+        if (!this.isInGenerationMode){
+            isFullSolution = true;
+        }
         const cellSize = 50;
         const totalSize = this.size * cellSize;
 
