@@ -642,7 +642,7 @@ async function renderSudoku(data, solution, svg) {
             rect.setAttribute("stroke-width", "1");
 
             if (data[index] !== 0 && !hasBackgroundImage) {
-                rect.setAttribute("fill", "rgba(128, 128, 128, 0.3)");
+                rect.setAttribute("fill", "rgba(255,255,255, 0.3)");
             }
             svg.appendChild(rect);
 

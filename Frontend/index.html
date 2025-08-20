@@ -79,24 +79,18 @@
                 text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }
             </style>
         </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="450" height="450" viewBox="0 0 450 450" id="fullSvg" style="display:none;">
+            <style>
+                text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }
+            </style>
+        </svg>
 
         <div class="button-group">
-            <button id="downloadBtn"  style="display:none">download partial Sudoku</button>
-            <button id="download filled sudoku"  style="display:none">download filled Sudoku</button>
+            <button id="downloadBtn"  style="display:none">partielles Sudoku herunterladen</button>
+            <button id="download filled sudoku"  style="display:none">Lösung herunterladen</button>
         </div>
     </div>
 </div>
-
-
-
-
-
-
-<svg xmlns="http://www.w3.org/2000/svg" width="450" height="450" viewBox="0 0 450 450" id="fullSvg" style="display:none;">
-    <style>
-        text { font-family: Arial, sans-serif; text-anchor: middle; fill: black; }
-    </style>
-</svg>
 
 
 
@@ -114,7 +108,7 @@
             🔹 Bei 9x9 müssen mindestens 17 Felder markiert werden, bei 6x6 mindestens 8 und bei 4x4 mindestens 4<br><br>
             🔹 Für eine ausführliche Version der Regeln: <a href="https://github.com/pavlvolk/SudokuImageGeneration" target="_blank"> README </a><br><br>
             <b>Sudoku Generator:</b> Felder markieren und Zahlen eingeben um dann ein Sudoku zu suchen<br>
-            <b>Sudoku Löser:</b> Zahlen eingeben um zu schauen, ob es eine Lösung gibt, schaut nicht nach Eindeutigkeit<br><br>
+            <b>Sudoku Löser:</b> Zahlen eingeben um zu schauen, ob es eine eindeutige Lösung gibt<br><br>
         </p>
         <button id="closeRulesBtn" style="margin-top:1rem; padding:0.5rem 1rem; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">Schließen</button>
     </div>

@@ -139,6 +139,7 @@ class UIManager {
      */
     handleSizeChange(size) {
         if (![4, 6, 9].includes(size)) return;
+        if (this.size === size) return;
 
         switch (size) {
             case 4:
@@ -162,6 +163,11 @@ class UIManager {
             this.removeAllListeners();
             this.reset();
             this._setupSudokuSolvingMode();
+        }
+        if(size === 9){
+            this.difficulty.style.display = "block";
+        } else{
+            this.difficulty.style.display = "none";
         }
     }
 
@@ -531,7 +537,6 @@ class UIManager {
 
             this.partialSvg.innerHTML = tempPartialSvg.innerHTML;
             this.fullSvg.innerHTML = tempFullSvg.innerHTML;
-            this.partialSvg.style.display = "block";
         }
     }
 
@@ -583,7 +588,14 @@ class UIManager {
                 this.updateDifficulty(result.difficulty)
                 await this._renderSVG(result.data, result.solution, this.partialSvg);
                 await this._renderSVG(result.data, result.solution, this.fullSvg, true);
-                this.partialSvg.style.display = "block";
+                if(this.isInGenerationMode){
+                    this.partialSvg.style.display = "block";
+                    this.fullSvg.style.display = "none";
+                }else{
+                    this.fullSvg.style.display = "block";
+                    this.partialSvg.style.display = "none";
+                }
+
                 this._toggleDownloadButtons(true);
             }
         } catch (error) {
@@ -705,9 +717,6 @@ class UIManager {
      * @private
      */
     async _renderSVG(data, solution, svgElement, isFullSolution = false) {
-        if (!this.isInGenerationMode){
-            isFullSolution = true;
-        }
         const cellSize = 50;
         const totalSize = this.size * cellSize;
 
@@ -798,9 +807,15 @@ class UIManager {
         const size = this.size * 50;
         const pdf = new jsPDF({ unit: 'pt', format: [size, size] });
 
-        svgElement.style.display = "block";
-        await svg2pdf(svgElement, pdf, { x: 0, y: 0, scale: 1 });
-        pdf.save(filename);
+        if(svgElement.style.display === "block"){
+            await svg2pdf(svgElement, pdf, { x: 0, y: 0, scale: 1 });
+            pdf.save(filename);
+        }else{
+            svgElement.style.display = "block";
+            await svg2pdf(svgElement, pdf, { x: 0, y: 0, scale: 1 });
+            pdf.save(filename);
+            svgElement.style.display = "none";
+        }
     }
 
     /**
