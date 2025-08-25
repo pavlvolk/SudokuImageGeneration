@@ -32,8 +32,7 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
     }
     if !filled {
         if !test_if_solvable(list, &mut sudoku){
-            return Ok(None);       
-            //TODO Error Nachricht anpassen, damit man nicht denken kann das es vielleicht doch eine Lösung gibt.
+            return Ok(None);
         }
         if size == 4 || size == 6 {
             let file = if size == 4 { File::open(SOLUTION_4).unwrap()} else { File::open(SOLUTION_6).unwrap()};
@@ -76,24 +75,6 @@ pub fn calculate_solution(list: &Vec<usize>, mut sudoku: &mut Sudoku, filled: bo
                     return Ok(Some(solution));
                 }
             }
-            
-            
-            
-            /*
-            let (results, row_permutation, col_permutation, mirror) = fill_grid(&list, &(sudoku.board_size as usize));
-            for result in results {
-                let (unique, possible_sol) = Sudoku::unique(sudoku, &result, &mut solver);
-                if unique {
-                    let mut solution = Sudoku::to_list(&mut possible_sol.unwrap(), &sudoku.board_size);
-                    solution = permute_numbers(&solution, sudoku.board_size);
-                    let mut usize_solution: Vec<usize> = solution.into_iter().map(|x| x as usize).collect();
-                    usize_solution = apply_reverse_permutations(&usize_solution, &row_permutation, &col_permutation, &mirror, &(sudoku.board_size as usize));
-                    let solution = usize_solution.into_iter().map(|x| x as i32).collect();
-                    return Ok(Some(solution));
-                }
-            }
-            
-             */
         }else if sudoku.board_size == 9 {
             
             let mapped_list: Vec<usize> = list
@@ -218,31 +199,6 @@ fn test_if_solvable(list: &Vec<usize>, mut sudoku: &mut Sudoku) -> bool {
     
     let (solvable, possible_sol) = sudoku::Sudoku::solvable(sudoku, &new_list, &mut solver);
     solvable
-}
-
-
-
-/*
-Permutiert die Zahlen random
- */
-pub(crate) fn permute_numbers(list: &Vec<i32>, size: i32) -> Vec<i32> {
-    use rand::seq::SliceRandom;
-    use rand::thread_rng;
-
-    let mut rng = thread_rng();
-
-    // Erzeuge Zahlen von 0 bis size-1
-    let mut indices: Vec<usize> = (1..(size+1) as usize).collect();
-
-    // Mische die Indizes zufällig
-    indices.shuffle(&mut rng);
-
-    let size_square = size*size;
-    let mut result = vec![0; size_square as usize];
-    for i in 0..size_square as usize {
-        result[i] = indices[list[i] as usize - 1] as i32;
-    }
-    result
 }
 
 pub fn permute_numbers_with_constraint(result: &Vec<i32>, constraints: &Vec<usize>, size: i32) -> (bool, Vec<i32>) {
