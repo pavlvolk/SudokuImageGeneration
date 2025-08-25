@@ -15,9 +15,9 @@ fn serate(list: &mut Vec<Vec<i32>>) -> f64{
     let x_wing_d = 4.0;
     let mut difficulty: f64 = 0.0;
     let mut candidates = initial_candidates(&list, board_size as i32);
-    display_candidates(&candidates);
+    //display_candidates(&candidates);
     loop{
-        display_candidates(&candidates);
+        //display_candidates(&candidates);
         compute_candidates(&mut candidates, board_size as i32);
         let mut solved = true;
         for (_, vals) in candidates.iter(){
@@ -26,35 +26,35 @@ fn serate(list: &mut Vec<Vec<i32>>) -> f64{
             }
         }
         if solved{
-            display_candidates(&candidates);
+            //display_candidates(&candidates);
             return difficulty;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        display_candidates(&candidates);
+        //display_candidates(&candidates);
         if naked_single(&mut candidates, list) {
            difficulty = difficulty.max(naked_single_d);
             continue;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        display_candidates(&candidates);
+        //display_candidates(&candidates);
         if hidden_single(&mut candidates, board_size as i32, list){
             difficulty = difficulty.max(hidden_single_d);
             continue;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        display_candidates(&candidates);
+        //display_candidates(&candidates);
         if apply_pointing_pair(&mut candidates, list){
             difficulty = difficulty.max(pointing_d);
             continue;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        display_candidates(&candidates);
+        //display_candidates(&candidates);
         if apply_claiming_pair(&mut candidates, list){
             difficulty = difficulty.max(claiming_d);
             continue;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        display_candidates(&candidates);
+        //display_candidates(&candidates);
         if apply_x_wing(&mut candidates, list){
             difficulty = difficulty.max(x_wing_d);
             continue;
