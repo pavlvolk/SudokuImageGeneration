@@ -164,11 +164,6 @@ class UIManager {
             this.reset();
             this._setupSudokuSolvingMode();
         }
-        if(size === 9){
-            this.difficulty.style.display = "block";
-        } else{
-            this.difficulty.style.display = "none";
-        }
     }
 
     /**
@@ -649,6 +644,7 @@ class UIManager {
         this._drawGrid();
         this._toggleDownloadButtons(false);
         this.partialSvg.style.display = "none";
+        this.fullSvg.style.display = "none";
     }
 
     /**
