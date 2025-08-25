@@ -3,7 +3,6 @@
 !/node_modules/
 !/node_modules/**
 !.gitnore
-!script.js
 !index.html
 !styles.css
 !sudoku.js

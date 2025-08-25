@@ -1,7 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
 pub fn rate_difficulty(list: Vec<i32>) -> f64{
-    //let new_list = list.into_iter().map(|x| x as i32).collect::<Vec<i32>>();
     let mut list_2d = list.chunks(list.len().isqrt()).map(|row| row.to_vec()).collect::<Vec<Vec<i32>>>();
     serate(&mut list_2d)
 }
@@ -15,9 +14,7 @@ fn serate(list: &mut Vec<Vec<i32>>) -> f64{
     let x_wing_d = 4.0;
     let mut difficulty: f64 = 0.0;
     let mut candidates = initial_candidates(&list, board_size as i32);
-    //display_candidates(&candidates);
     loop{
-        //display_candidates(&candidates);
         compute_candidates(&mut candidates, board_size as i32);
         let mut solved = true;
         for (_, vals) in candidates.iter(){
@@ -26,35 +23,29 @@ fn serate(list: &mut Vec<Vec<i32>>) -> f64{
             }
         }
         if solved{
-            //display_candidates(&candidates);
             return difficulty;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        //display_candidates(&candidates);
         if naked_single(&mut candidates, list) {
            difficulty = difficulty.max(naked_single_d);
             continue;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        //display_candidates(&candidates);
         if hidden_single(&mut candidates, board_size as i32, list){
             difficulty = difficulty.max(hidden_single_d);
             continue;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        //display_candidates(&candidates);
         if apply_pointing_pair(&mut candidates, list){
             difficulty = difficulty.max(pointing_d);
             continue;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        //display_candidates(&candidates);
         if apply_claiming_pair(&mut candidates, list){
             difficulty = difficulty.max(claiming_d);
             continue;
         }
         compute_candidates(&mut candidates, board_size as i32);
-        //display_candidates(&candidates);
         if apply_x_wing(&mut candidates, list){
             difficulty = difficulty.max(x_wing_d);
             continue;
@@ -174,55 +165,6 @@ pub fn compute_candidates(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board_
     candidates
 }
 
-fn new_compute_candidates(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board_size: i32) {
-    let vertical_box_size = board_size.isqrt();
-    let mut horizontal_box_size = vertical_box_size;
-    if board_size == 6 {
-        horizontal_box_size += 1;
-    }
-
-    // Step 1: Collect all known values
-    let solved_cells: Vec<((i32, i32), i32)> = candidates.iter()
-        .filter_map(|(&(r, c), vals)| if vals.len() == 1 {
-            Some(((r, c), vals[0]))
-        } else {
-            None
-        })
-        .collect();
-
-    // Step 2: Remove each known value from peers
-    for ((r, c), val) in solved_cells {
-        // Remove from same column
-        for inner_r in 0..board_size {
-            if inner_r != r {
-                if let Some(cell) = candidates.get_mut(&(inner_r, c)) {
-                    cell.retain(|&x| x != val);
-                }
-            }
-        }
-        // Remove from same row
-        for inner_c in 0..board_size {
-            if inner_c != c {
-                if let Some(cell) = candidates.get_mut(&(r, inner_c)) {
-                    cell.retain(|&x| x != val);
-                }
-            }
-        }
-        // Remove from same box
-        let box_corner_r = (r / vertical_box_size) * vertical_box_size;
-        let box_corner_c = (c / horizontal_box_size) * horizontal_box_size;
-
-        for br in box_corner_r..box_corner_r + vertical_box_size {
-            for bc in box_corner_c..box_corner_c + horizontal_box_size {
-                if br != r || bc != c {
-                    if let Some(cell) = candidates.get_mut(&(br, bc)) {
-                        cell.retain(|&x| x != val);
-                    }
-                }
-            }
-        }
-    }
-}
 
 fn get_all_units(board_size: i32) -> Vec<Vec<(i32, i32)>> {
     let mut row_units: Vec<Vec<(i32, i32)>> = Vec::new();
@@ -297,7 +239,6 @@ fn hidden_single(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board_size: i32
     changed
 }
 
-//TODO Funktion eigentlich unnötig zum lösen, nur für schwierigkeit zu gebrauchen.
 fn naked_single(candidates: &mut HashMap<(i32, i32), Vec<i32>>, list: &mut Vec<Vec<i32>>) -> bool {
     let mut changed = false;
     for ((r, c), val) in candidates.clone(){
@@ -490,39 +431,4 @@ fn apply_x_wing(candidates: &mut HashMap<(i32, i32), Vec<i32>>, board: &mut Vec<
         }
     }
     changed
-}
-
-fn display_candidates(candidates: &HashMap<(i32, i32), Vec<i32>>) {
-    let size = 9;
-    let box_size = 3;
-
-    for r in 0..size {
-        if r % box_size == 0 && r != 0 {
-            println!("{}", "-".repeat((box_size * 8) + 2));
-        }
-
-        for c in 0..size {
-            if c % box_size == 0 && c != 0 {
-                print!("| ");
-            }
-            let empty_vec: Vec<i32> = Vec::new();
-            let val = candidates.get(&(r as i32, c as i32)).unwrap_or(&empty_vec);
-            if val.len() == 1 {
-                // Filled cell
-                print!("{:3}     ", val[0]);
-            } else if val.is_empty() {
-                // Invalid cell
-                print!(" .      ");
-            } else {
-                // Display candidates like 123
-                let mut val_str = val.iter().map(|v| v.to_string()).collect::<Vec<_>>().join("");
-                if val_str.len() > 6 {
-                    val_str.truncate(6); // trim for neatness
-                    val_str.push('+');
-                }
-                print!("{:<7}", val_str);
-            }
-        }
-        println!();
-    }
 }
